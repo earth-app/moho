@@ -15,6 +15,8 @@ do
   rm -rf "$dir"
 done
 
+rm -rf .husky .vscode
+
 cp -Rfv ./docs/* ./
 rm -rf ./docs
 
