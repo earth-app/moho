@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>Moho</h1>
+<blockquote>
+<p>📚 An NPM package with a curated list of special events used by The Earth App</p>
+</blockquote>
+<p>A powerful TypeScript library for working with calendar entries. Supports exact dates, recurring annual events, and relative dates (like &quot;3rd Monday in January&quot;).</p>
+<h2>Features</h2>
+<ul>
+<li>
+<p>📅 <strong>Multiple Date Formats</strong></p>
+<ul>
+<li>Exact dates (recurring annually): <code>MM/DD</code></li>
+<li>Exact dates with year (one-time events): <code>MM/DD,YYYY</code></li>
+<li>Relative dates (e.g., &quot;3rd Monday in January&quot;): <code>NWeekdayMonth</code></li>
+</ul>
+</li>
+<li>
+<p>🔍 <strong>Powerful Query Functions</strong></p>
+<ul>
+<li>Find events in the next X days/weeks/months/years</li>
+<li>Find events on a specific date</li>
+<li>Filter by entry type</li>
+</ul>
+</li>
+<li>
+<p>📊 <strong>CSV Support</strong></p>
+<ul>
+<li>Automatic format detection</li>
+<li>Recursive directory reading</li>
+<li>Handles multiple date formats in a single file</li>
+</ul>
+</li>
+</ul>
+<h2>Installation</h2>
+<pre class="prettyprint source lang-bash"><code>npm install moho
+# or
+bun add moho
+</code></pre>
+<h2>Usage</h2>
+<h3>Basic Usage</h3>
+<pre class="prettyprint source lang-typescript"><code>import { getEntries, getAllEntries, getEntriesInNextDays } from 'moho';
+
+// Read entries from a single file
+const events = getEntries('./data/events.csv');
+
+// Read all entries from a directory (recursively)
+const allEntries = getAllEntries('./data');
+
+// Get events happening in the next 7 days
+const upcoming = getEntriesInNextDays(allEntries, 7);
+upcoming.forEach(({ entry, date }) => {
+	console.log(`${entry.name} on ${date.toLocaleDateString()}`);
+});
+</code></pre>
+<h3>Working with Different Entry Types</h3>
+<pre class="prettyprint source lang-typescript"><code>import { ExactDateEntry, ExactDateWithYearEntry, RelativeDateEntry, getEntriesByType } from 'moho';
+
+// Create entries programmatically
+const newYear = new ExactDateEntry(&quot;New Year's Day&quot;, 1, 1);
+const independence = new ExactDateWithYearEntry('USA Independence', 7, 4, 1776);
+const mlkDay = new RelativeDateEntry('MLK Day', 3, 1, 1); // 3rd Monday in January
+
+// Filter by type
+const exactDateEvents = getEntriesByType(allEntries, ExactDateEntry);
+const historicalEvents = getEntriesByType(allEntries, ExactDateWithYearEntry);
+</code></pre>
+<h3>Query Functions</h3>
+<pre class="prettyprint source lang-typescript"><code>import {
+	getEntriesInNextDays,
+	getEntriesInNextWeeks,
+	getEntriesInNextMonths,
+	getEntriesOnDate,
+	getEntriesOnMonthDay
+} from 'moho';
+
+const entries = getAllEntries('./data');
+
+// Get entries in the next 30 days
+const nextMonth = getEntriesInNextDays(entries, 30);
+
+// Get entries in the next 2 weeks
+const nextTwoWeeks = getEntriesInNextWeeks(entries, 2);
+
+// Get entries in the next 6 months
+const nextSixMonths = getEntriesInNextMonths(entries, 6);
+
+// Get entries on a specific date
+const today = new Date();
+const todaysEvents = getEntriesOnDate(entries, today);
+
+// Get entries on a specific month/day (any year)
+const piDay = getEntriesOnMonthDay(entries, 3, 14); // March 14
+</code></pre>
+<h3>Working with Historical Events</h3>
+<pre class="prettyprint source lang-typescript"><code>import { ExactDateWithYearEntry } from 'moho';
+
+const independence = new ExactDateWithYearEntry('USA Independence', 7, 4, 1776);
+
+// Get the anniversary for a specific year
+const anniversary2026 = independence.getAnniversary(2026);
+console.log(anniversary2026); // July 4, 2026
+
+// Calculate years since the event
+const yearsSince = independence.getYearsSince(new Date());
+console.log(`${yearsSince} years ago`);
+</code></pre>
+<h2>CSV File Format</h2>
+<h3>Exact Dates (Recurring)</h3>
+<pre class="prettyprint source lang-csv"><code>New Year's Day,01/01
+Valentine's Day,02/14
+Pi Day,03/14
+</code></pre>
+<h3>Exact Dates with Year (One-time)</h3>
+<pre class="prettyprint source lang-csv"><code>Afghanistan,08/19,1919
+United States,07/04,1776
+France,07/14,1789
+</code></pre>
+<h3>Relative Dates</h3>
+<pre class="prettyprint source lang-csv"><code>Martin Luther King Jr. Day,3MondayJan
+Labor Day,1MondaySep
+Thanksgiving,4ThursdayNov
+</code></pre>
+<p>Format: <code>{N}{Weekday}{Month}</code> where:</p>
+<ul>
+<li><code>N</code> = occurrence number (1-5)</li>
+<li><code>Weekday</code> = Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday</li>
+<li><code>Month</code> = Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec</li>
+</ul>
+<h2>API Reference</h2>
+<h3>Classes</h3>
+<h4><code>Entry</code> (Abstract)</h4>
+<p>Base class for all entry types.</p>
+<p>Methods:</p>
+<ul>
+<li><code>getNextOccurrence(fromDate?: Date): Date</code></li>
+<li><code>occursOn(date: Date): boolean</code></li>
+<li><code>getOccurrencesInRange(startDate: Date, endDate: Date): Date[]</code></li>
+</ul>
+<h4><code>ExactDateEntry</code></h4>
+<p>For events that recur annually on a specific month/day.</p>
+<pre class="prettyprint source lang-typescript"><code>new ExactDateEntry(name: string, month: number, day: number)
+</code></pre>
+<h4><code>ExactDateWithYearEntry</code></h4>
+<p>For one-time events with a specific year.</p>
+<pre class="prettyprint source lang-typescript"><code>new ExactDateWithYearEntry(name: string, month: number, day: number, year: number)
+</code></pre>
+<p>Additional methods:</p>
+<ul>
+<li><code>getAnniversary(year: number): Date</code></li>
+<li><code>getYearsSince(date?: Date): number</code></li>
+</ul>
+<h4><code>RelativeDateEntry</code></h4>
+<p>For events that occur on a relative date (e.g., &quot;3rd Monday in January&quot;).</p>
+<pre class="prettyprint source lang-typescript"><code>new RelativeDateEntry(name: string, occurrence: number, dayOfWeek: number, month: number)
+</code></pre>
+<h3>Functions</h3>
+<h4>File Reading</h4>
+<ul>
+<li><code>getEntries(filePath: string): Entry[]</code> - Read entries from a CSV file</li>
+<li><code>getAllEntries(dataDir?: string): Entry[]</code> - Read all CSV files recursively</li>
+<li><code>parseCSVLine(line: string): Entry | null</code> - Parse a single CSV line</li>
+</ul>
+<h4>Querying</h4>
+<ul>
+<li><code>getEntriesInNextDays(entries: Entry[], days: number, fromDate?: Date)</code></li>
+<li><code>getEntriesInNextWeeks(entries: Entry[], weeks: number, fromDate?: Date)</code></li>
+<li><code>getEntriesInNextMonths(entries: Entry[], months: number, fromDate?: Date)</code></li>
+<li><code>getEntriesInNextYears(entries: Entry[], years: number, fromDate?: Date)</code></li>
+<li><code>getEntriesOnDate(entries: Entry[], date: Date): Entry[]</code></li>
+<li><code>getEntriesOnMonthDay(entries: Entry[], month: number, day: number): Entry[]</code></li>
+<li><code>getEntriesByType&lt;T&gt;(entries: Entry[], type: Constructor&lt;T&gt;): T[]</code></li>
+</ul>
+<h2>Development</h2>
+<pre class="prettyprint source lang-bash"><code># Install dependencies
+bun install
+
+# Run tests
+bun run test
+
+# Run tests with coverage
+bun run test:coverage
+
+# Run tests in watch mode
+bun run test:watch
+
+# Format code
+bun run prettier
+
+# Build
+bun run build
+</code></pre>
+<h2>License</h2>
+<p>Apache 2.0 License</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jan 19 2026 19:33:48 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
