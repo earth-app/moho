@@ -1,0 +1,22 @@
+{
+	"plugins": ["node_modules/jsdoc-babel"],
+	"babel": {
+		"extensions": ["ts"],
+		"babelrc": false,
+		"presets": ["@babel/preset-typescript"]
+	},
+	"source": {
+		"include": ["src"],
+		"includePattern": ".+\\.ts(doc|x)?$"
+	},
+	"opts": {
+		"destination": "./docs",
+		"recurse": true,
+		"readme": "./README.md",
+		"template": "node_modules/docdash"
+	},
+	"templates": {
+		"cleverLinks": false,
+		"monospaceLinks": false
+	}
+}
