@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
       packages: read
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v6
@@ -29,6 +30,20 @@ jobs:
         run: bun run build
       - name: Run Tests
         run: bun run test:coverage
+      - name: Code Coverage Summary Report
+        uses: saschanowak/CloverCodeCoverageSummary@1.1.1
+        with:
+          filename: coverage/clover.xml
+      - name: Code Coverage Report (Workflow Summary)
+        run: |
+          cat code-coverage-summary.md >> $GITHUB_STEP_SUMMARY
+          cat code-coverage-details.md >> $GITHUB_STEP_SUMMARY
+      - name: Code Coverage Report (Pull Request)
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-summary.md
 
   deploy:
     runs-on: ubuntu-latest
