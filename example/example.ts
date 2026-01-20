@@ -37,8 +37,8 @@ if (todaysEvents.length > 0) {
 }
 console.log();
 
-// Get country birthdays (independence days) in the next 6 months
-console.log('🌍 Country birthdays in the next 6 months:');
+// Get place birthdays (independence days) in the next 6 months
+console.log('🌍 Place birthdays in the next 6 months:');
 const countryBirthdays = getEntriesByType(allEntries, ExactDateWithYearEntry);
 const upcomingBirthdays = getEntriesInNextMonths(countryBirthdays, 6);
 upcomingBirthdays.slice(0, 5).forEach(({ entry, date }) => {
