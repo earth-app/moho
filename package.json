@@ -8,12 +8,6 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "license": "Apache-2.0",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist",
     "LICENSE",
@@ -26,7 +20,7 @@
   },
   "scripts": {
     "example": "bun run example/example.ts",
-    "build": "bun build src/index.ts --outdir=dist",
+    "build": "bun build src/index.ts --outdir=dist --target=node --format=esm --minify --sourcemap=linked && bunx tsc --project tsconfig.build.json",
     "compile": "bunx babel src --out-dir out --extensions \".ts\"",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
