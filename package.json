@@ -21,6 +21,9 @@
     "src",
     "docs"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "example": "bun run example/example.ts",
     "build": "bun build src/index.ts --outdir=dist",

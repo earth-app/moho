@@ -40,9 +40,9 @@ jobs:
           bun run compile
           bun run doc
       - name: Publish to NPM
-        run: bun publish --provenance --access public
+        run: bun publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
     runs-on: ubuntu-latest
