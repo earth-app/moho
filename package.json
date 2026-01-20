@@ -18,7 +18,8 @@
     "dist",
     "LICENSE",
     "README.md",
-    "src"
+    "src",
+    "docs"
   ],
   "scripts": {
     "example": "bun run example/example.ts",

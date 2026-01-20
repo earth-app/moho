@@ -34,11 +34,13 @@ jobs:
       - name: Build Package
         run: bun run build
       - name: Generate JSDoc
-        run: bun run doc
+        run: |
+          bun run compile
+          bun run doc
       - name: Publish to NPM
         run: bun publish --provenance --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   release:
     runs-on: ubuntu-latest
