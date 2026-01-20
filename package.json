@@ -1,5 +1,5 @@
 {
-  "name": "moho",
+  "name": "@earth-app/moho",
   "description": "An NPM package with a curated list of special events used by The Earth App",
   "version": "1.0.0",
   "author": "earth-app",
