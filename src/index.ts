@@ -6,7 +6,10 @@ import path from 'path';
  * Base class for all entry types.
  */
 export abstract class Entry {
-	constructor(public name: string) {}
+	constructor(
+		public name: string,
+		public source?: string
+	) {}
 
 	/**
 	 * Gets the next occurrence of this entry from the given date.
@@ -39,9 +42,10 @@ export class ExactDateEntry extends Entry {
 	constructor(
 		name: string,
 		public month: number,
-		public day: number
+		public day: number,
+		public override source?: string
 	) {
-		super(name);
+		super(name, source);
 	}
 
 	getNextOccurrence(fromDate: Date = new Date()): Date {
@@ -84,9 +88,10 @@ export class ExactDateWithYearEntry extends Entry {
 		name: string,
 		public month: number,
 		public day: number,
-		public year: number
+		public year: number,
+		public override source?: string
 	) {
-		super(name);
+		super(name, source);
 	}
 
 	getNextOccurrence(fromDate: Date = new Date()): Date {
@@ -169,9 +174,10 @@ export class RelativeDateEntry extends Entry {
 		name: string,
 		public occurrence: number, // 1-5 (1st, 2nd, 3rd, 4th, 5th)
 		public dayOfWeek: number, // 0-6 (Sunday-Saturday)
-		public month: number // 1-12
+		public month: number, // 1-12
+		public override source?: string
 	) {
-		super(name);
+		super(name, source);
 	}
 
 	/**
@@ -303,13 +309,14 @@ export class RelativeDateEntry extends Entry {
  * @param filePath - The path to the CSV file
  * @returns Array of Entry objects
  */
-export function getEntries(filePath: string): Entry[] {
+export function getEntries(filePath: string, dataDir: string = './src/data'): Entry[] {
+	const relative = path.relative(dataDir, filePath).split(path.sep).join('/');
 	const data = fs.readFileSync(filePath, 'utf-8');
 	const lines = data.split('\n').filter((line) => line.trim() !== '');
 	const entries: Entry[] = [];
 
 	for (const line of lines) {
-		const parsed = parseCSVLine(line);
+		const parsed = parseCSVLine(line, relative);
 		if (parsed) {
 			entries.push(parsed);
 		}
@@ -327,7 +334,7 @@ export function getEntries(filePath: string): Entry[] {
  * @param line - The CSV line to parse
  * @returns An Entry object or null if invalid
  */
-export function parseCSVLine(line: string): Entry | null {
+export function parseCSVLine(line: string, source?: string): Entry | null {
 	const parts = line.split(',');
 	if (parts.length < 2) return null;
 
@@ -352,18 +359,18 @@ export function parseCSVLine(line: string): Entry | null {
 			if (yearStr) {
 				const year = parseInt(yearStr, 10);
 				if (!isNaN(year)) {
-					return new ExactDateWithYearEntry(name, month, day, year);
+					return new ExactDateWithYearEntry(name, month, day, year, source);
 				}
 			}
 		}
 
-		return new ExactDateEntry(name, month, day);
+		return new ExactDateEntry(name, month, day, source);
 	}
 
 	// Format 3: NWeekdayMonth (e.g., "3MondayJan")
 	try {
 		const { occurrence, dayOfWeek, month } = RelativeDateEntry.parseRelativeDate(dateStr);
-		return new RelativeDateEntry(name, occurrence, dayOfWeek, month);
+		return new RelativeDateEntry(name, occurrence, dayOfWeek, month, source);
 	} catch (error) {
 		return null;
 	}
@@ -384,7 +391,7 @@ export function getAllEntries(dataDir: string = './src/data'): Entry[] {
 			if (item.isDirectory()) {
 				readDirRecursively(fullPath);
 			} else if (item.isFile() && item.name.endsWith('.csv')) {
-				const entries = getEntries(fullPath);
+				const entries = getEntries(fullPath, dataDir);
 				allEntries.push(...entries);
 			}
 		}
