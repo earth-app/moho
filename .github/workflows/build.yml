@@ -39,7 +39,7 @@ jobs:
           cat code-coverage-summary.md >> $GITHUB_STEP_SUMMARY
           cat code-coverage-details.md >> $GITHUB_STEP_SUMMARY
       - name: Code Coverage Report (Pull Request)
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
         if: github.event_name == 'pull_request'
         with:
           recreate: true
