@@ -52,7 +52,7 @@
     "ts-jest": "^29.4.9"
   },
   "peerDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3 || ^7.0.0"
   },
   "bugs": {
     "url": "https://github.com/earth-app/moho/issues"
