@@ -34,25 +34,25 @@
     "*.{ts,js,cjs,json,md}": "prettier --write"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.6",
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.2",
-    "@babel/preset-typescript": "^7.28.5",
-    "@jest/globals": "^30.3.0",
+    "@babel/cli": "^7.29.7",
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
+    "@babel/preset-typescript": "^7.29.7",
+    "@jest/globals": "^30.4.1",
     "@types/bun": "latest",
     "babel-plugin-add-module-exports": "^1.0.4",
     "docdash": "^2.0.2",
     "husky": "^9.1.7",
-    "jest": "^30.3.0",
+    "jest": "^30.4.2",
     "jsdoc": "^4.0.5",
     "jsdoc-babel": "^0.5.0",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.8.2",
+    "prettier": "^3.9.6",
     "prettier-plugin-organize-imports": "4.3.0",
-    "ts-jest": "^29.4.9"
+    "ts-jest": "^29.4.12"
   },
   "peerDependencies": {
-    "typescript": "^5.9.3 || ^7.0.0"
+    "typescript": "^5.9.3"
   },
   "bugs": {
     "url": "https://github.com/earth-app/moho/issues"
