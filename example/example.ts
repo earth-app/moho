@@ -3,17 +3,22 @@
  */
 
 import {
+	DateRangeEntry,
+	EasterEntry,
 	ExactDateEntry,
 	ExactDateWithYearEntry,
+	IntervalEntry,
+	OneTimeEntry,
 	RelativeDateEntry,
 	getAllEntries,
+	getEntriesBySource,
 	getEntriesByType,
 	getEntriesInNextDays,
 	getEntriesInNextMonths,
 	getEntriesOnDate
 } from '../src/index';
 
-const allEntries = getAllEntries('./src/data');
+const allEntries = getAllEntries();
 
 console.log(`Total entries loaded: ${allEntries.length}\n`);
 
@@ -70,4 +75,63 @@ console.log(
 console.log(`  - ${independence.name}: ${independence.getYearsSince()} years ago`);
 console.log(
 	`  - ${thanksgiving.name}: Next occurrence on ${thanksgiving.getNextOccurrence().toLocaleDateString()}`
+);
+
+console.log();
+
+// Cosmic events: eclipses and comet returns are one-time dated events
+console.log('🌘 Next cosmic events:');
+const cosmic = getEntriesBySource(allEntries, 'cosmic/');
+getEntriesInNextDays(cosmic, 365 * 3)
+	.slice(0, 6)
+	.forEach(({ entry, date }) => {
+		console.log(`  - ${entry.name} on ${date.toLocaleDateString()}`);
+	});
+console.log();
+
+// Periodic cycles: orbital periods and the saros, anchored to an epoch
+console.log('🪐 Orbital cycles:');
+getEntriesByType(allEntries, IntervalEntry)
+	.slice(0, 4)
+	.forEach((entry) => {
+		const years = (entry.intervalDays / 365.25).toFixed(2);
+		console.log(`  - ${entry.name}: every ${entry.intervalDays} days (${years} years)`);
+	});
+console.log();
+
+const rightNow = new Date();
+
+// Spans: which sports seasons and zodiac sign are running today
+console.log('🏟️  In season today:');
+getEntriesByType(allEntries, DateRangeEntry)
+	.filter((entry) => entry.occursOn(rightNow))
+	.slice(0, 8)
+	.forEach((entry) => {
+		const { end } = entry.getRangeFor(rightNow.getFullYear() - (entry.wrapsYear ? 1 : 0));
+		console.log(`  - ${entry.name} (through ${end.toLocaleDateString()})`);
+	});
+console.log();
+
+// Moveable feasts move every year, in both the Western and Orthodox reckonings
+console.log('✝️  Moveable feasts this year:');
+getEntriesByType(allEntries, EasterEntry)
+	.filter((entry) =>
+		['Easter Sunday', 'Good Friday', 'Pentecost', 'Orthodox Easter'].includes(entry.name)
+	)
+	.forEach((entry) => {
+		console.log(
+			`  - ${entry.name}: ${entry.getDateFor(rightNow.getFullYear()).toLocaleDateString()}`
+		);
+	});
+console.log();
+
+// One-time events drop out of the upcoming list once they have passed
+console.log('🔭 Eclipses still ahead:');
+const eclipses = getEntriesByType(
+	getEntriesBySource(allEntries, 'cosmic/eclipses.csv'),
+	OneTimeEntry
+);
+const remaining = eclipses.filter((entry) => !entry.hasOccurred());
+console.log(
+	`  ${remaining.length} of ${eclipses.length} eclipses in the dataset are still to come`
 );
