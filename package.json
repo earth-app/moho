@@ -1,7 +1,7 @@
 {
   "name": "@earth-app/moho",
   "description": "An NPM package with a curated list of special events used by The Earth App",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "author": "earth-app",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -25,10 +25,20 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:live": "NODE_OPTIONS=--experimental-vm-modules jest --testPathIgnorePatterns=/node_modules/ --testMatch=\"**/test/live/*.live.test.ts\"",
+    "typecheck": "bunx tsc --noEmit",
+    "data:places": "bun run scripts/fetch-places.ts",
+    "data:colleges": "bun run scripts/fetch-colleges.ts",
+    "data:sports": "bun run scripts/fetch-sports.ts",
+    "data:cosmic": "bun run scripts/generate-cosmic.ts",
+    "data:all": "bun run data:cosmic && bun run data:sports-dates && bun run data:places && bun run data:colleges && bun run data:sports && bun run data:space",
+    "verify:refresh": "bun run scripts/verify-data.ts",
     "prettier": "bunx prettier --write .",
     "prettier:check": "bunx prettier --check .",
     "prepare": "husky install",
-    "doc": "jsdoc out/* -d docs -R README.md"
+    "doc": "jsdoc out/* -d docs -R README.md",
+    "data:space": "bun run scripts/fetch-space.ts",
+    "data:sports-dates": "bun run scripts/generate-sports-dates.ts"
   },
   "lint-staged": {
     "*.{ts,js,cjs,json,md}": "prettier --write"
