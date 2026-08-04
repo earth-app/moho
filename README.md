@@ -186,6 +186,28 @@ Saros Cycle (Eclipse Repeat),every:6585.3211:2017-08-21
 
 Every entry carries a `source` field holding its data-relative path, so `getEntriesBySource(entries, 'cosmic/')` retrieves a whole domain.
 
+### Cloudflare Workers
+
+`DATA_DIR` resolves against the module's own location, which needs a real filesystem. Workers has none, so **pass the directory explicitly** rather than relying on the default.
+
+Bundle the CSVs as text modules and read them from the bundle root:
+
+```jsonc
+// wrangler.jsonc
+{
+	"find_additional_modules": true,
+	"base_dir": "./node_modules/@earth-app/moho/src",
+	"rules": [{ "type": "Text", "globs": ["data/**/*.csv"], "fallthrough": true }]
+}
+```
+
+```typescript
+// the CSVs land at the bundle root, not next to the module
+const entries = getAllEntries('/bundle/data');
+```
+
+That adds all 76 files to the Worker, about 50 KB gzipped. `parseCSVLine`, `splitCSVFields` and every entry class are pure and need no filesystem at all, so a Worker that loads its own CSV text can use them directly.
+
 ## API Reference
 
 ### Classes

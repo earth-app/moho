@@ -67,17 +67,32 @@ export function splitCSVFields(line: string): string[] {
 }
 
 /**
- * Absolute path to the CSV data bundled with this package. Resolved from the
- * module's own location so it works from any working directory, both from
- * source (`src/data`) and from the built output (`dist/../src/data`).
+ * Path to the CSV data bundled with this package.
+ *
+ * Resolved from the module's own location so it works from any working
+ * directory, both from source (`src/data`) and from the built output
+ * (`dist/../src/data`).
+ *
+ * On runtimes with no real filesystem - Cloudflare Workers being the one that
+ * matters here - nothing resolves and this falls back to `./src/data`, the
+ * relative default this package used before the constant existed. Workers
+ * consumers should pass an explicit directory instead: the CSVs are bundled as
+ * text modules, so the data lives at the bundle root (`/bundle/data`) rather
+ * than anywhere near the module.
  */
 export const DATA_DIR: string = (() => {
-	const here = path.dirname(fileURLToPath(import.meta.url));
-	const candidates = [path.join(here, 'data'), path.join(here, '..', 'src', 'data')];
-	for (const candidate of candidates) {
-		if (fs.existsSync(candidate)) return candidate;
+	// the historical default, kept as the fallback so a filesystem-less runtime
+	// behaves exactly as it did before rather than pointing somewhere invented
+	const fallback = './src/data';
+	try {
+		const here = path.dirname(fileURLToPath(import.meta.url));
+		for (const candidate of [path.join(here, 'data'), path.join(here, '..', 'src', 'data')]) {
+			if (fs.existsSync(candidate)) return candidate;
+		}
+	} catch {
+		// no file: URL, or no fs; fall through
 	}
-	return candidates[0] as string;
+	return fallback;
 })();
 
 /**

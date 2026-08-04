@@ -1,4 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 import {
 	DATA_DIR,
 	DateRangeEntry,
@@ -664,6 +666,21 @@ describe('Data directory resolution', () => {
 	test('DATA_DIR points at a real directory containing the data', () => {
 		expect(DATA_DIR).toContain('data');
 		expect(getEntries(`${DATA_DIR}/events.csv`).length).toBeGreaterThan(0);
+	});
+
+	test('DATA_DIR is an absolute path where a filesystem exists', () => {
+		// a runtime with no filesystem falls back to the relative './src/data';
+		// under Node it must have resolved against the module location
+		expect(path.isAbsolute(DATA_DIR)).toBe(true);
+		expect(fs.existsSync(DATA_DIR)).toBe(true);
+	});
+
+	test('an explicit directory is used verbatim, ignoring DATA_DIR', () => {
+		// this is the path Cloudflare Workers takes: the CSVs are bundled as text
+		// modules at the bundle root, nowhere near the module itself
+		const entries = getEntries('./src/data/events.csv', './src/data');
+		expect(entries.length).toBeGreaterThan(0);
+		expect(entries[0]?.source).toBe('events.csv');
 	});
 
 	test('getAllEntries works with no arguments, from any working directory', () => {
