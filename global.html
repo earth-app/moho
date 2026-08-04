@@ -98,6 +98,208 @@
 
         
             
+<h4 class="name" id="DATA_DIR"><span class="type-signature">(constant) </span>DATA_DIR<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Path to the CSV data bundled with this package.
+
+Resolved from the module's own location so it works from any working
+directory, both from source (`src/data`) and from the built output
+(`dist/../src/data`).
+
+On runtimes with no real filesystem - Cloudflare Workers being the one that
+matters here - nothing resolves and this falls back to `./src/data`, the
+relative default this package used before the constant existed. Workers
+consumers should pass an explicit directory instead: the CSVs are bundled as
+text modules, so the data lives at the bundle root (`/bundle/data`) rather
+than anywhere near the module.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line99">line 99</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="DateRangeEntry"><span class="type-signature"></span>DateRangeEntry<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Entry positioned a fixed number of days from Easter Sunday, which moves every
+year. Covers the moveable feasts (Ash Wednesday, Good Friday, Pentecost) in
+both the Gregorian (Western) and Julian (Orthodox) reckonings.
+
+Example: `Good Friday,easter-2` / `Orthodox Easter,orthodox-easter+0`
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line546">line 546</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="EasterEntry"><span class="type-signature"></span>EasterEntry<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Parses a CSV file and returns an array of Entry objects.
+Automatically detects the format of each line.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line633">line 633</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="Entry"><span class="type-signature"></span>Entry<span class="type-signature"></span></h4>
 
 
@@ -143,7 +345,7 @@ Example: "New Year's Day,01/01"
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line54">line 54</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line148">line 148</a>
     </li></ul></dd>
     
 
@@ -206,7 +408,7 @@ Example: "Afghanistan,08/19,1919"
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line91">line 91</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line185">line 185</a>
     </li></ul></dd>
     
 
@@ -269,7 +471,7 @@ Example: "Martin Luther King Jr. Day,3MondayJan"
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line143">line 143</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line237">line 237</a>
     </li></ul></dd>
     
 
@@ -287,14 +489,17 @@ Example: "Martin Luther King Jr. Day,3MondayJan"
 
         
             
-<h4 class="name" id="RelativeDateEntry"><span class="type-signature"></span>RelativeDateEntry<span class="type-signature"></span></h4>
+<h4 class="name" id="IntervalEntry"><span class="type-signature"></span>IntervalEntry<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    Parses a CSV file and returns an array of Entry objects.
-Automatically detects the format of each line.
+    Entry covering a span of the year rather than a single day, recurring
+annually. A span whose end falls before its start wraps into the next year,
+which is how most sports seasons and two of the zodiac signs behave.
+
+Example: `NFL Regular Season,range:09/04-01/04`
 </div>
 
 
@@ -332,7 +537,144 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line254">line 254</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line467">line 467</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="OneTimeEntry"><span class="type-signature"></span>OneTimeEntry<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Entry that repeats on a fixed period measured in days, anchored to an epoch.
+Built for cycles that do not fit a calendar: orbital periods, comet returns,
+the saros and metonic cycles.
+
+Example: `Halley's Comet Perihelion,every:27758:1986-02-09`
+
+The period may be fractional (Mars orbits in 686.98 days); occurrences are
+rounded to the nearest whole day.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line412">line 412</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="RelativeDateEntry"><span class="type-signature"></span>RelativeDateEntry<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Entry for something that happens exactly once, on a known calendar day.
+Unlike <a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a> it has no annual anniversary: a total
+solar eclipse or a comet perihelion simply happens and is then over.
+
+Example: `Total Solar Eclipse (Iceland/Spain),2026-08-12`
+
+Dates are calendar days, not instants. Astronomical rows store the UTC day.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line359">line 359</a>
     </li></ul></dd>
     
 
@@ -353,6 +695,148 @@ Automatically detects the format of each line.
 
     
         <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="fromDayNumber"><span class="type-signature"></span>fromDayNumber<span class="signature">(dayNumber)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Inverse of <a href="global.html#toDayNumber">toDayNumber</a>; returns local midnight on that calendar day.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dayNumber</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The number of days since the Unix epoch</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line42">line 42</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A `Date` at local midnight
+</div>
+
+
+
+    
+
+
+
+
 
         
             
@@ -394,8 +878,6 @@ Automatically detects the format of each line.
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -415,12 +897,6 @@ Automatically detects the format of each line.
 
             
 
-            
-                <td class="default">
-                
-                    ./src/data
-                
-                </td>
             
 
             <td class="description last">The root data directory (default: './src/data')</td>
@@ -464,7 +940,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line324">line 324</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line773">line 773</a>
     </li></ul></dd>
     
 
@@ -494,6 +970,170 @@ Automatically detects the format of each line.
         
 <div class="param-desc">
     Array of all Entry objects
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getEntriesBySource"><span class="type-signature"></span>getEntriesBySource<span class="signature">(entries, source)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Gets entries that came from a given data file or directory.
+
+Sources are recorded as forward-slash paths relative to the data directory,
+so `'sports/'` matches every sports file and `'cosmic/eclipses.csv'` matches
+exactly one.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>entries</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of entries to filter</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A source path or path prefix</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line919">line 919</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Array of entries whose source starts with the given prefix
 </div>
 
 
@@ -624,7 +1264,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line444">line 444</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line929">line 929</a>
     </li></ul></dd>
     
 
@@ -802,7 +1442,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line351">line 351</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line800">line 800</a>
     </li></ul></dd>
     
 
@@ -980,7 +1620,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line380">line 380</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line829">line 829</a>
     </li></ul></dd>
     
 
@@ -1158,7 +1798,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line369">line 369</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line818">line 818</a>
     </li></ul></dd>
     
 
@@ -1336,7 +1976,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line398">line 398</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line847">line 847</a>
     </li></ul></dd>
     
 
@@ -1366,6 +2006,188 @@ Automatically detects the format of each line.
         
 <div class="param-desc">
     Array of entries with their next occurrence dates
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getEntriesInRange"><span class="type-signature"></span>getEntriesInRange<span class="signature">(entries, startDate, endDate)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Gets every occurrence of every entry that falls inside a date window.
+
+Unlike the `getEntriesInNext*` helpers, which only ever consider each entry's
+single next occurrence, this expands recurring entries so a multi-year window
+yields one result per year.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>entries</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of entries to expand</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>startDate</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Start of the window (inclusive)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>endDate</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">End of the window (inclusive)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line902">line 902</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Entry/date pairs sorted by date
 </div>
 
 
@@ -1496,7 +2318,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line415">line 415</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line864">line 864</a>
     </li></ul></dd>
     
 
@@ -1550,7 +2372,14 @@ Automatically detects the format of each line.
 
 
 <div class="description">
-    Gets entries that occur on a specific month and day (any year).
+    Gets entries whose anchor date is a specific month and day (any year).
+
+Only entries that own a fixed month/day are considered:
+<a href="global.html#ExactDateEntry">ExactDateEntry</a>, <a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a> and
+<a href="global.html#OneTimeEntry">OneTimeEntry</a>. Entries whose date is computed
+(<a href="global.html#RelativeDateEntry">RelativeDateEntry</a>, <a href="global.html#IntervalEntry">IntervalEntry</a>, <a href="global.html#EasterEntry">EasterEntry</a>) or
+that span a window (<a href="global.html#DateRangeEntry">DateRangeEntry</a>) never match; use
+<a href="global.html#getEntriesOnDate">getEntriesOnDate</a> for those.
 </div>
 
 
@@ -1674,7 +2503,7 @@ Automatically detects the format of each line.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line426">line 426</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line882">line 882</a>
     </li></ul></dd>
     
 
@@ -1703,7 +2532,7 @@ Automatically detects the format of each line.
 
         
 <div class="param-desc">
-    Array of entries that occur on this month/day
+    Array of entries anchored to this month/day
 </div>
 
 
@@ -1720,7 +2549,168 @@ Automatically detects the format of each line.
     
 
     
-    <h4 class="name" id="parseCSVLine"><span class="type-signature"></span>parseCSVLine<span class="signature">(line)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="isValidMonthDay"><span class="type-signature"></span>isValidMonthDay<span class="signature">(month, day)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Whether the month/day pair is a real calendar date. February is allowed 29
+days because a recurring `02/29` entry is valid in leap years.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>month</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Month (1-12)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>day</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Day of month</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line655">line 655</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    true if the combination exists
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="parseCSVLine"><span class="type-signature"></span>parseCSVLine<span class="signature">(line, source)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1729,10 +2719,22 @@ Automatically detects the format of each line.
 
 <div class="description">
     Parses a single CSV line into an Entry object.
-Supports three formats:
-1. "Name,MM/DD" - Exact date (recurring)
-2. "Name,MM/DD,YYYY" - Exact date with year (one-time)
-3. "Name,NWeekdayMonth" - Relative date (e.g., "3MondayJan")
+
+Supported formats, detected from the second field:
+
+| Format                        | Type                       | Example                       |
+| ----------------------------- | -------------------------- | ----------------------------- |
+| `MM/DD`                       | <a href="global.html#ExactDateEntry">ExactDateEntry</a>     | `Pi Day,03/14`                |
+| `MM/DD,YYYY`                  | <a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a> | `Afghanistan,08/19,1919`  |
+| `NWeekdayMonth`               | <a href="global.html#RelativeDateEntry">RelativeDateEntry</a>  | `MLK Day,3MondayJan`          |
+| `LWeekdayMonth`               | <a href="global.html#RelativeDateEntry">RelativeDateEntry</a>  | `Memorial Day,LMondayMay`     |
+| `YYYY-MM-DD`                  | <a href="global.html#OneTimeEntry">OneTimeEntry</a>       | `Solar Eclipse,2026-08-12`    |
+| `every:DAYS:YYYY-MM-DD`       | <a href="global.html#IntervalEntry">IntervalEntry</a>      | `Halley,every:27758:1986-02-09` |
+| `range:MM/DD-MM/DD`           | <a href="global.html#DateRangeEntry">DateRangeEntry</a>     | `NFL Season,range:09/04-01/04` |
+| `easter[+-]N`                 | <a href="global.html#EasterEntry">EasterEntry</a>        | `Good Friday,easter-2`        |
+| `orthodox-easter[+-]N`        | <a href="global.html#EasterEntry">EasterEntry</a>        | `Orthodox Easter,orthodox-easter+0` |
+
+Names containing commas must be double-quoted.
 </div>
 
 
@@ -1783,6 +2785,24 @@ Supports three formats:
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Optional provenance recorded on the entry</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -1820,7 +2840,7 @@ Supports three formats:
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line278">line 278</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line684">line 684</a>
     </li></ul></dd>
     
 
@@ -1861,6 +2881,294 @@ Supports three formats:
 
 
         
+            
+
+    
+
+    
+    <h4 class="name" id="splitCSVFields"><span class="type-signature"></span>splitCSVFields<span class="signature">(line)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Splits a CSV line into fields, honouring RFC 4180 double-quoted fields so
+that names containing commas (`"Nike, Inc's Birthday",01/25,1964`) survive.
+A doubled quote inside a quoted field is an escaped quote.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The raw CSV line</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line54">line 54</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The individual field values, unquoted and unescaped
+</div>
+
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="toDayNumber"><span class="type-signature"></span>toDayNumber<span class="signature">(date)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Converts a `Date` to a whole-day number, ignoring the time-of-day and the
+local timezone offset. Two dates on the same local calendar day always
+produce the same number, which makes day arithmetic immune to DST shifts.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The date to convert</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line33">line 33</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The number of days since the Unix epoch
+</div>
+
+
+
+    
+
+
+
+
+
+        
     
 
     
@@ -1876,13 +3184,13 @@ Supports three formats:
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DATA_DIR">DATA_DIR</a></li><li><a href="global.html#DateRangeEntry">DateRangeEntry</a></li><li><a href="global.html#EasterEntry">EasterEntry</a></li><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#IntervalEntry">IntervalEntry</a></li><li><a href="global.html#OneTimeEntry">OneTimeEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#fromDayNumber">fromDayNumber</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesBySource">getEntriesBySource</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesInRange">getEntriesInRange</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#isValidMonthDay">isValidMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#splitCSVFields">splitCSVFields</a></li><li><a href="global.html#toDayNumber">toDayNumber</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 03:02:05 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 06:32:46 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>

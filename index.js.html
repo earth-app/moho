@@ -31,20 +31,114 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RelativeDateEntry = exports.ExactDateWithYearEntry = exports.ExactDateEntry = exports.Entry = void 0;
+exports.RelativeDateEntry = exports.OneTimeEntry = exports.IntervalEntry = exports.ExactDateWithYearEntry = exports.ExactDateEntry = exports.Entry = exports.EasterEntry = exports.DateRangeEntry = exports.DATA_DIR = void 0;
 exports.getAllEntries = getAllEntries;
 exports.getEntries = getEntries;
+exports.getEntriesBySource = getEntriesBySource;
 exports.getEntriesByType = getEntriesByType;
 exports.getEntriesInNextDays = getEntriesInNextDays;
 exports.getEntriesInNextMonths = getEntriesInNextMonths;
 exports.getEntriesInNextWeeks = getEntriesInNextWeeks;
 exports.getEntriesInNextYears = getEntriesInNextYears;
+exports.getEntriesInRange = getEntriesInRange;
 exports.getEntriesOnDate = getEntriesOnDate;
 exports.getEntriesOnMonthDay = getEntriesOnMonthDay;
 exports.parseCSVLine = parseCSVLine;
+exports.splitCSVFields = splitCSVFields;
 var _fs = _interopRequireDefault(require("fs"));
 var _path = _interopRequireDefault(require("path"));
+var _url = require("url");
 function _interopRequireDefault(e) { return e &amp;&amp; e.__esModule ? e : { default: e }; }
+const MS_PER_DAY = 86_400_000;
+
+/**
+ * Converts a `Date` to a whole-day number, ignoring the time-of-day and the
+ * local timezone offset. Two dates on the same local calendar day always
+ * produce the same number, which makes day arithmetic immune to DST shifts.
+ * @param date - The date to convert
+ * @returns The number of days since the Unix epoch
+ */
+function toDayNumber(date) {
+  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY);
+}
+
+/**
+ * Inverse of {@link toDayNumber}; returns local midnight on that calendar day.
+ * @param dayNumber - The number of days since the Unix epoch
+ * @returns A `Date` at local midnight
+ */
+function fromDayNumber(dayNumber) {
+  const utc = new Date(dayNumber * MS_PER_DAY);
+  return new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate());
+}
+
+/**
+ * Splits a CSV line into fields, honouring RFC 4180 double-quoted fields so
+ * that names containing commas (`"Nike, Inc's Birthday",01/25,1964`) survive.
+ * A doubled quote inside a quoted field is an escaped quote.
+ * @param line - The raw CSV line
+ * @returns The individual field values, unquoted and unescaped
+ */
+function splitCSVFields(line) {
+  const fields = [];
+  let current = '';
+  let quoted = false;
+  for (let i = 0; i &lt; line.length; i++) {
+    const char = line[i];
+    if (quoted) {
+      if (char === '"') {
+        if (line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          quoted = false;
+        }
+      } else {
+        current += char;
+      }
+    } else if (char === '"' &amp;&amp; current.trim() === '') {
+      quoted = true;
+      current = '';
+    } else if (char === ',') {
+      fields.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  fields.push(current);
+  return fields;
+}
+
+/**
+ * Path to the CSV data bundled with this package.
+ *
+ * Resolved from the module's own location so it works from any working
+ * directory, both from source (`src/data`) and from the built output
+ * (`dist/../src/data`).
+ *
+ * On runtimes with no real filesystem - Cloudflare Workers being the one that
+ * matters here - nothing resolves and this falls back to `./src/data`, the
+ * relative default this package used before the constant existed. Workers
+ * consumers should pass an explicit directory instead: the CSVs are bundled as
+ * text modules, so the data lives at the bundle root (`/bundle/data`) rather
+ * than anywhere near the module.
+ */
+const DATA_DIR = exports.DATA_DIR = (() => {
+  // the historical default, kept as the fallback so a filesystem-less runtime
+  // behaves exactly as it did before rather than pointing somewhere invented
+  const fallback = './src/data';
+  try {
+    const here = _path.default.dirname((0, _url.fileURLToPath)(import.meta.url));
+    for (const candidate of [_path.default.join(here, 'data'), _path.default.join(here, '..', 'src', 'data')]) {
+      if (_fs.default.existsSync(candidate)) return candidate;
+    }
+  } catch {
+    // no file: URL, or no fs; fall through
+  }
+  return fallback;
+})();
+
 /**
  * Represents a calendar entry with a name and date.
  * Base class for all entry types.
@@ -172,8 +266,11 @@ exports.ExactDateWithYearEntry = ExactDateWithYearEntry;
 class RelativeDateEntry extends Entry {
   static DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   static MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  /** Sentinel {@link occurrence} value meaning "the last one in the month". */
+  static LAST = -1;
   constructor(name, occurrence,
-  // 1-5 (1st, 2nd, 3rd, 4th, 5th)
+  // 1-5, or RelativeDateEntry.LAST (-1) for the last in the month
   dayOfWeek,
   // 0-6 (Sunday-Saturday)
   month,
@@ -188,13 +285,16 @@ class RelativeDateEntry extends Entry {
 
   /**
    * Parses a relative date string (e.g., "3MondayJan") into components.
+   * A leading `L` means the last occurrence in the month ("LMondayMay"),
+   * which is how holidays such as Memorial Day are actually defined.
    * @param dateStr - The date string to parse
    * @returns Object with occurrence, dayOfWeek, and month
    */
   static parseRelativeDate(dateStr) {
-    const occurrenceMatch = dateStr.match(/^(\d)/);
+    const occurrenceMatch = dateStr.match(/^([1-5]|[Ll])/);
     if (!occurrenceMatch || !occurrenceMatch[1]) throw new Error('Invalid relative date format');
-    const occurrence = parseInt(occurrenceMatch[1], 10);
+    const token = occurrenceMatch[1];
+    const occurrence = token.toUpperCase() === 'L' ? RelativeDateEntry.LAST : parseInt(token, 10);
     let dayOfWeek = -1;
     for (let i = 0; i &lt; this.DAYS_OF_WEEK.length; i++) {
       const dayName = this.DAYS_OF_WEEK[i];
@@ -225,10 +325,15 @@ class RelativeDateEntry extends Entry {
    * @param year - The year
    * @param month - The month (1-12)
    * @param dayOfWeek - Day of week (0-6, Sunday-Saturday)
-   * @param occurrence - Which occurrence (1-5)
+   * @param occurrence - Which occurrence (1-5), or {@link RelativeDateEntry.LAST}
    * @returns The calculated date or null if it doesn't exist
    */
   static getNthWeekdayOfMonth(year, month, dayOfWeek, occurrence) {
+    if (occurrence === RelativeDateEntry.LAST) {
+      const lastDay = new Date(year, month, 0);
+      const daysToSubtract = (lastDay.getDay() - dayOfWeek + 7) % 7;
+      return new Date(year, month - 1, lastDay.getDate() - daysToSubtract);
+    }
     const firstDay = new Date(year, month - 1, 1);
     const firstDayOfWeek = firstDay.getDay();
     let daysToAdd = (dayOfWeek - firstDayOfWeek + 7) % 7;
@@ -242,22 +347,19 @@ class RelativeDateEntry extends Entry {
     return targetDate;
   }
   getNextOccurrence(fromDate = new Date()) {
-    let year = fromDate.getFullYear();
-    let date = RelativeDateEntry.getNthWeekdayOfMonth(year, this.month, this.dayOfWeek, this.occurrence);
-    if (!date || date &lt;= fromDate) {
-      year++;
-      date = RelativeDateEntry.getNthWeekdayOfMonth(year, this.month, this.dayOfWeek, this.occurrence);
+    // a 5th weekday does not exist every year, so scan forward instead of
+    // giving up after a single retry
+    for (let offset = 0; offset &lt;= 10; offset++) {
+      const date = RelativeDateEntry.getNthWeekdayOfMonth(fromDate.getFullYear() + offset, this.month, this.dayOfWeek, this.occurrence);
+      if (date &amp;&amp; date > fromDate) return date;
     }
-    return date || new Date(9999, 11, 31);
+    return new Date(9999, 11, 31);
   }
   occursOn(date) {
     if (date.getMonth() !== this.month - 1) return false;
     if (date.getDay() !== this.dayOfWeek) return false;
-    const firstDay = new Date(date.getFullYear(), this.month - 1, 1);
-    const firstDayOfWeek = firstDay.getDay();
-    const daysToAdd = (this.dayOfWeek - firstDayOfWeek + 7) % 7;
-    const expectedDay = 1 + daysToAdd + (this.occurrence - 1) * 7;
-    return date.getDate() === expectedDay;
+    const expected = RelativeDateEntry.getNthWeekdayOfMonth(date.getFullYear(), this.month, this.dayOfWeek, this.occurrence);
+    return expected !== null &amp;&amp; expected.getDate() === date.getDate();
   }
   getOccurrencesInRange(startDate, endDate) {
     const occurrences = [];
@@ -274,16 +376,293 @@ class RelativeDateEntry extends Entry {
 }
 
 /**
+ * Entry for something that happens exactly once, on a known calendar day.
+ * Unlike {@link ExactDateWithYearEntry} it has no annual anniversary: a total
+ * solar eclipse or a comet perihelion simply happens and is then over.
+ *
+ * Example: `Total Solar Eclipse (Iceland/Spain),2026-08-12`
+ *
+ * Dates are calendar days, not instants. Astronomical rows store the UTC day.
+ */
+exports.RelativeDateEntry = RelativeDateEntry;
+class OneTimeEntry extends Entry {
+  constructor(name, month, day, year, source) {
+    super(name, source);
+    this.month = month;
+    this.day = day;
+    this.year = year;
+    this.source = source;
+  }
+
+  /** The event's calendar day, at local midnight. */
+  get date() {
+    return new Date(this.year, this.month - 1, this.day);
+  }
+
+  /**
+   * Returns the event date. A one-time event has no future occurrence once it
+   * has passed, so the returned date may be in the past; callers filtering on
+   * `date >= fromDate` (as the query helpers do) drop it naturally.
+   * @param _fromDate - Unused; present to satisfy the {@link Entry} contract
+   * @returns The event date
+   */
+  getNextOccurrence(_fromDate = new Date()) {
+    return this.date;
+  }
+  occursOn(date) {
+    return date.getFullYear() === this.year &amp;&amp; date.getMonth() === this.month - 1 &amp;&amp; date.getDate() === this.day;
+  }
+  getOccurrencesInRange(startDate, endDate) {
+    const date = this.date;
+    return date >= startDate &amp;&amp; date &lt;= endDate ? [date] : [];
+  }
+
+  /**
+   * Whether this event is already in the past.
+   * @param fromDate - The date to compare against (default: today)
+   * @returns true if the event day is before `fromDate`
+   */
+  hasOccurred(fromDate = new Date()) {
+    return this.date &lt; fromDate;
+  }
+}
+
+/**
+ * Entry that repeats on a fixed period measured in days, anchored to an epoch.
+ * Built for cycles that do not fit a calendar: orbital periods, comet returns,
+ * the saros and metonic cycles.
+ *
+ * Example: `Halley's Comet Perihelion,every:27758:1986-02-09`
+ *
+ * The period may be fractional (Mars orbits in 686.98 days); occurrences are
+ * rounded to the nearest whole day.
+ */
+exports.OneTimeEntry = OneTimeEntry;
+class IntervalEntry extends Entry {
+  constructor(name, epoch, intervalDays, source) {
+    super(name, source);
+    this.epoch = epoch;
+    this.intervalDays = intervalDays;
+    this.source = source;
+    if (!(intervalDays > 0)) throw new Error('Interval must be a positive number of days');
+  }
+
+  /**
+   * Gets the nth occurrence relative to the epoch.
+   * @param n - Cycle index; 0 is the epoch itself, negatives run backwards
+   * @returns The occurrence date
+   */
+  getOccurrence(n) {
+    return fromDayNumber(Math.round(toDayNumber(this.epoch) + n * this.intervalDays));
+  }
+
+  /**
+   * Gets the cycle index nearest to the given date.
+   * @param date - The date to locate
+   * @returns The (possibly fractional) number of cycles since the epoch
+   */
+  getCycleAt(date) {
+    return (toDayNumber(date) - toDayNumber(this.epoch)) / this.intervalDays;
+  }
+  getNextOccurrence(fromDate = new Date()) {
+    let n = Math.ceil(this.getCycleAt(fromDate));
+    // rounding to whole days can put the candidate on or before fromDate
+    while (this.getOccurrence(n) &lt;= fromDate) n++;
+    return this.getOccurrence(n);
+  }
+  occursOn(date) {
+    const n = Math.round(this.getCycleAt(date));
+    return toDayNumber(this.getOccurrence(n)) === toDayNumber(date);
+  }
+  getOccurrencesInRange(startDate, endDate) {
+    const occurrences = [];
+    for (let n = Math.floor(this.getCycleAt(startDate));; n++) {
+      const occurrence = this.getOccurrence(n);
+      if (occurrence > endDate) break;
+      if (occurrence >= startDate) occurrences.push(occurrence);
+    }
+    return occurrences;
+  }
+}
+
+/**
+ * Entry covering a span of the year rather than a single day, recurring
+ * annually. A span whose end falls before its start wraps into the next year,
+ * which is how most sports seasons and two of the zodiac signs behave.
+ *
+ * Example: `NFL Regular Season,range:09/04-01/04`
+ */
+exports.IntervalEntry = IntervalEntry;
+class DateRangeEntry extends Entry {
+  constructor(name, startMonth, startDay, endMonth, endDay, source) {
+    super(name, source);
+    this.startMonth = startMonth;
+    this.startDay = startDay;
+    this.endMonth = endMonth;
+    this.endDay = endDay;
+    this.source = source;
+  }
+
+  /** Whether the span crosses into the following calendar year. */
+  get wrapsYear() {
+    return this.endMonth &lt; this.startMonth || this.endMonth === this.startMonth &amp;&amp; this.endDay &lt; this.startDay;
+  }
+
+  /**
+   * Gets the concrete span for the year the run starts in.
+   * @param year - The year the span starts in
+   * @returns The start and end dates, both inclusive
+   */
+  getRangeFor(year) {
+    return {
+      start: new Date(year, this.startMonth - 1, this.startDay),
+      end: new Date(year + (this.wrapsYear ? 1 : 0), this.endMonth - 1, this.endDay)
+    };
+  }
+
+  /**
+   * Returns the next start date, i.e. when the span next opens.
+   * @param fromDate - The date to calculate from (default: today)
+   * @returns The next start date
+   */
+  getNextOccurrence(fromDate = new Date()) {
+    const year = fromDate.getFullYear();
+    const start = new Date(year, this.startMonth - 1, this.startDay);
+    return start > fromDate ? start : new Date(year + 1, this.startMonth - 1, this.startDay);
+  }
+
+  /**
+   * Whether the given date falls anywhere inside the span, endpoints included.
+   * @param date - The date to check
+   * @returns true if the date is within the span
+   */
+  occursOn(date) {
+    // a wrapping span can be entered from either the current or the prior year
+    for (const year of [date.getFullYear(), date.getFullYear() - 1]) {
+      const {
+        start,
+        end
+      } = this.getRangeFor(year);
+      if (date >= start &amp;&amp; date &lt;= end) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Gets the start dates of every span that opens within the given window.
+   * @param startDate - Start of the window
+   * @param endDate - End of the window
+   * @returns Array of span start dates
+   */
+  getOccurrencesInRange(startDate, endDate) {
+    const occurrences = [];
+    for (let year = startDate.getFullYear(); year &lt;= endDate.getFullYear(); year++) {
+      const start = new Date(year, this.startMonth - 1, this.startDay);
+      if (start >= startDate &amp;&amp; start &lt;= endDate) occurrences.push(start);
+    }
+    return occurrences;
+  }
+}
+
+/**
+ * Entry positioned a fixed number of days from Easter Sunday, which moves every
+ * year. Covers the moveable feasts (Ash Wednesday, Good Friday, Pentecost) in
+ * both the Gregorian (Western) and Julian (Orthodox) reckonings.
+ *
+ * Example: `Good Friday,easter-2` / `Orthodox Easter,orthodox-easter+0`
+ */
+exports.DateRangeEntry = DateRangeEntry;
+class EasterEntry extends Entry {
+  constructor(name, offsetDays, calendar = 'gregorian', source) {
+    super(name, source);
+    this.offsetDays = offsetDays;
+    this.calendar = calendar;
+    this.source = source;
+  }
+
+  /**
+   * Computes Easter Sunday, as a date in the Gregorian calendar.
+   *
+   * The Gregorian branch is the anonymous Meeus/Jones/Butcher algorithm. The
+   * Julian branch computes Orthodox Easter on the Julian calendar and then
+   * shifts it onto the Gregorian calendar by the offset for that century.
+   * @param year - The year to compute for
+   * @param calendar - Which reckoning to use (default: gregorian)
+   * @returns Easter Sunday for that year
+   */
+  static computeEaster(year, calendar = 'gregorian') {
+    if (calendar === 'julian') {
+      const a = year % 4;
+      const b = year % 7;
+      const c = year % 19;
+      const d = (19 * c + 15) % 30;
+      const e = (2 * a + 4 * b - d + 34) % 7;
+      const month = Math.floor((d + e + 114) / 31);
+      const day = (d + e + 114) % 31 + 1;
+
+      // Julian -> Gregorian: 2 days at the Julian year 200, +1 per skipped leap century
+      const julianDate = new Date(year, month - 1, day);
+      const shift = Math.floor(year / 100) - Math.floor(year / 400) - 2;
+      julianDate.setDate(julianDate.getDate() + shift);
+      return julianDate;
+    }
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = (h + l - 7 * m + 114) % 31 + 1;
+    return new Date(year, month - 1, day);
+  }
+
+  /**
+   * Gets this entry's date in a given year.
+   * @param year - The year to compute for
+   * @returns The date, Easter plus this entry's offset
+   */
+  getDateFor(year) {
+    const easter = EasterEntry.computeEaster(year, this.calendar);
+    easter.setDate(easter.getDate() + this.offsetDays);
+    return easter;
+  }
+  getNextOccurrence(fromDate = new Date()) {
+    const year = fromDate.getFullYear();
+    const thisYear = this.getDateFor(year);
+    return thisYear > fromDate ? thisYear : this.getDateFor(year + 1);
+  }
+  occursOn(date) {
+    return toDayNumber(this.getDateFor(date.getFullYear())) === toDayNumber(date);
+  }
+  getOccurrencesInRange(startDate, endDate) {
+    const occurrences = [];
+    // the offset can push a date into an adjacent year, so widen the sweep
+    for (let year = startDate.getFullYear() - 1; year &lt;= endDate.getFullYear() + 1; year++) {
+      const date = this.getDateFor(year);
+      if (date >= startDate &amp;&amp; date &lt;= endDate) occurrences.push(date);
+    }
+    return occurrences;
+  }
+}
+
+/**
  * Parses a CSV file and returns an array of Entry objects.
  * Automatically detects the format of each line.
  * @param filePath - The path to the CSV file
  * @returns Array of Entry objects
  */
-exports.RelativeDateEntry = RelativeDateEntry;
-function getEntries(filePath, dataDir = './src/data') {
-  const relative = _path.default.relative(dataDir, filePath).split(_path.default.sep).join('/');
+exports.EasterEntry = EasterEntry;
+function getEntries(filePath, dataDir = DATA_DIR) {
+  const relative = _path.default.relative(_path.default.resolve(dataDir), _path.default.resolve(filePath)).split(_path.default.sep).join('/');
   const data = _fs.default.readFileSync(filePath, 'utf-8');
-  const lines = data.split('\n').filter(line => line.trim() !== '');
+  const lines = data.split('\n').map(line => line.replace(/^\uFEFF/, '').replace(/\r$/, '')).filter(line => line.trim() !== '' &amp;&amp; !line.startsWith('#'));
   const entries = [];
   for (const line of lines) {
     const parsed = parseCSVLine(line, relative);
@@ -295,28 +674,98 @@ function getEntries(filePath, dataDir = './src/data') {
 }
 
 /**
+ * Whether the month/day pair is a real calendar date. February is allowed 29
+ * days because a recurring `02/29` entry is valid in leap years.
+ * @param month - Month (1-12)
+ * @param day - Day of month
+ * @returns true if the combination exists
+ */
+function isValidMonthDay(month, day) {
+  if (!Number.isInteger(month) || !Number.isInteger(day)) return false;
+  if (month &lt; 1 || month > 12 || day &lt; 1) return false;
+  const maxDay = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+  return day &lt;= maxDay;
+}
+
+/**
  * Parses a single CSV line into an Entry object.
- * Supports three formats:
- * 1. "Name,MM/DD" - Exact date (recurring)
- * 2. "Name,MM/DD,YYYY" - Exact date with year (one-time)
- * 3. "Name,NWeekdayMonth" - Relative date (e.g., "3MondayJan")
+ *
+ * Supported formats, detected from the second field:
+ *
+ * | Format                        | Type                       | Example                       |
+ * | ----------------------------- | -------------------------- | ----------------------------- |
+ * | `MM/DD`                       | {@link ExactDateEntry}     | `Pi Day,03/14`                |
+ * | `MM/DD,YYYY`                  | {@link ExactDateWithYearEntry} | `Afghanistan,08/19,1919`  |
+ * | `NWeekdayMonth`               | {@link RelativeDateEntry}  | `MLK Day,3MondayJan`          |
+ * | `LWeekdayMonth`               | {@link RelativeDateEntry}  | `Memorial Day,LMondayMay`     |
+ * | `YYYY-MM-DD`                  | {@link OneTimeEntry}       | `Solar Eclipse,2026-08-12`    |
+ * | `every:DAYS:YYYY-MM-DD`       | {@link IntervalEntry}      | `Halley,every:27758:1986-02-09` |
+ * | `range:MM/DD-MM/DD`           | {@link DateRangeEntry}     | `NFL Season,range:09/04-01/04` |
+ * | `easter[+-]N`                 | {@link EasterEntry}        | `Good Friday,easter-2`        |
+ * | `orthodox-easter[+-]N`        | {@link EasterEntry}        | `Orthodox Easter,orthodox-easter+0` |
+ *
+ * Names containing commas must be double-quoted.
  * @param line - The CSV line to parse
+ * @param source - Optional provenance recorded on the entry
  * @returns An Entry object or null if invalid
  */
 function parseCSVLine(line, source) {
-  const parts = line.split(',');
+  const parts = splitCSVFields(line);
   if (parts.length &lt; 2) return null;
   const name = parts[0]?.trim();
   const dateStr = parts[1]?.trim();
   if (!name || !dateStr) return null;
 
-  // Format 1 &amp; 2: MM/DD or MM/DD,YYYY
+  // every:DAYS:YYYY-MM-DD - periodic cycle anchored to an epoch
+  const intervalMatch = dateStr.match(/^every:(\d+(?:\.\d+)?):(\d{4})-(\d{2})-(\d{2})$/i);
+  if (intervalMatch) {
+    const [, daysStr, yearStr, monthStr, dayStr] = intervalMatch;
+    const days = parseFloat(daysStr);
+    const month = parseInt(monthStr, 10);
+    const day = parseInt(dayStr, 10);
+    if (!(days > 0) || !isValidMonthDay(month, day)) return null;
+    const epoch = new Date(parseInt(yearStr, 10), month - 1, day);
+    return new IntervalEntry(name, epoch, days, source);
+  }
+
+  // easter+N / orthodox-easter-N - moveable feasts
+  const easterMatch = dateStr.match(/^(orthodox-)?easter(?:\s*([+-])\s*(\d+))?$/i);
+  if (easterMatch) {
+    const sign = easterMatch[2] === '-' ? -1 : 1;
+    const offset = easterMatch[3] ? sign * parseInt(easterMatch[3], 10) : 0;
+    return new EasterEntry(name, offset, easterMatch[1] ? 'julian' : 'gregorian', source);
+  }
+
+  // range:MM/DD-MM/DD - an annual span
+  const rangeMatch = dateStr.match(/^range:(\d{1,2})\/(\d{1,2})-(\d{1,2})\/(\d{1,2})$/i);
+  if (rangeMatch) {
+    const [startMonth, startDay, endMonth, endDay] = rangeMatch.slice(1).map(value => parseInt(value, 10));
+    if (!isValidMonthDay(startMonth, startDay) || !isValidMonthDay(endMonth, endDay)) {
+      return null;
+    }
+    return new DateRangeEntry(name, startMonth, startDay, endMonth, endDay, source);
+  }
+
+  // YYYY-MM-DD - a single dated event
+  const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const [, yearStr, monthStr, dayStr] = isoMatch;
+    const month = parseInt(monthStr, 10);
+    const day = parseInt(dayStr, 10);
+    if (!isValidMonthDay(month, day)) return null;
+    return new OneTimeEntry(name, month, day, parseInt(yearStr, 10), source);
+  }
+
+  // MM/DD or MM/DD,YYYY
   if (dateStr.includes('/')) {
-    const [monthStr, dayStr] = dateStr.split('/');
+    const segments = dateStr.split('/');
+    // a bare MM/DD/YYYY would silently drop its year; require the CSV column
+    if (segments.length !== 2) return null;
+    const [monthStr, dayStr] = segments;
     if (!monthStr || !dayStr) return null;
     const month = parseInt(monthStr, 10);
     const day = parseInt(dayStr, 10);
-    if (isNaN(month) || isNaN(day)) return null;
+    if (!isValidMonthDay(month, day)) return null;
 
     // Check if there's a year
     if (parts.length >= 3) {
@@ -331,7 +780,7 @@ function parseCSVLine(line, source) {
     return new ExactDateEntry(name, month, day, source);
   }
 
-  // Format 3: NWeekdayMonth (e.g., "3MondayJan")
+  // NWeekdayMonth (e.g., "3MondayJan")
   try {
     const {
       occurrence,
@@ -339,7 +788,7 @@ function parseCSVLine(line, source) {
       month
     } = RelativeDateEntry.parseRelativeDate(dateStr);
     return new RelativeDateEntry(name, occurrence, dayOfWeek, month, source);
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -349,7 +798,7 @@ function parseCSVLine(line, source) {
  * @param dataDir - The root data directory (default: './src/data')
  * @returns Array of all Entry objects
  */
-function getAllEntries(dataDir = './src/data') {
+function getAllEntries(dataDir = DATA_DIR) {
   const allEntries = [];
   function readDirRecursively(dirPath) {
     const items = _fs.default.readdirSync(dirPath, {
@@ -445,22 +894,58 @@ function getEntriesOnDate(entries, date) {
 }
 
 /**
- * Gets entries that occur on a specific month and day (any year).
+ * Gets entries whose anchor date is a specific month and day (any year).
+ *
+ * Only entries that own a fixed month/day are considered:
+ * {@link ExactDateEntry}, {@link ExactDateWithYearEntry} and
+ * {@link OneTimeEntry}. Entries whose date is computed
+ * ({@link RelativeDateEntry}, {@link IntervalEntry}, {@link EasterEntry}) or
+ * that span a window ({@link DateRangeEntry}) never match; use
+ * {@link getEntriesOnDate} for those.
  * @param entries - Array of entries to filter
  * @param month - Month (1-12)
  * @param day - Day of month
- * @returns Array of entries that occur on this month/day
+ * @returns Array of entries anchored to this month/day
  */
 function getEntriesOnMonthDay(entries, month, day) {
   return entries.filter(entry => {
-    if (entry instanceof ExactDateEntry) {
-      return entry.month === month &amp;&amp; entry.day === day;
-    }
-    if (entry instanceof ExactDateWithYearEntry) {
+    if (entry instanceof ExactDateEntry || entry instanceof ExactDateWithYearEntry || entry instanceof OneTimeEntry) {
       return entry.month === month &amp;&amp; entry.day === day;
     }
     return false;
   });
+}
+
+/**
+ * Gets every occurrence of every entry that falls inside a date window.
+ *
+ * Unlike the `getEntriesInNext*` helpers, which only ever consider each entry's
+ * single next occurrence, this expands recurring entries so a multi-year window
+ * yields one result per year.
+ * @param entries - Array of entries to expand
+ * @param startDate - Start of the window (inclusive)
+ * @param endDate - End of the window (inclusive)
+ * @returns Entry/date pairs sorted by date
+ */
+function getEntriesInRange(entries, startDate, endDate) {
+  return entries.flatMap(entry => entry.getOccurrencesInRange(startDate, endDate).map(date => ({
+    entry,
+    date
+  }))).sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+/**
+ * Gets entries that came from a given data file or directory.
+ *
+ * Sources are recorded as forward-slash paths relative to the data directory,
+ * so `'sports/'` matches every sports file and `'cosmic/eclipses.csv'` matches
+ * exactly one.
+ * @param entries - Array of entries to filter
+ * @param source - A source path or path prefix
+ * @returns Array of entries whose source starts with the given prefix
+ */
+function getEntriesBySource(entries, source) {
+  return entries.filter(entry => entry.source?.startsWith(source) ?? false);
 }
 
 /**
@@ -481,13 +966,13 @@ function getEntriesByType(entries, type) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DATA_DIR">DATA_DIR</a></li><li><a href="global.html#DateRangeEntry">DateRangeEntry</a></li><li><a href="global.html#EasterEntry">EasterEntry</a></li><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#IntervalEntry">IntervalEntry</a></li><li><a href="global.html#OneTimeEntry">OneTimeEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#fromDayNumber">fromDayNumber</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesBySource">getEntriesBySource</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesInRange">getEntriesInRange</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#isValidMonthDay">isValidMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#splitCSVFields">splitCSVFields</a></li><li><a href="global.html#toDayNumber">toDayNumber</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 03:02:05 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 06:32:46 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>

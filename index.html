@@ -47,31 +47,43 @@
 <blockquote>
 <p>📚 An NPM package with a curated list of special events used by The Earth App</p>
 </blockquote>
-<p>A powerful TypeScript library for working with calendar entries. Supports exact dates, recurring annual events, and relative dates (like &quot;3rd Monday in January&quot;).</p>
+<p>A TypeScript library for working with calendar entries. Supports exact dates, recurring annual events, relative dates (&quot;3rd Monday in January&quot;), one-off astronomical events, periodic cycles, seasonal spans, and the moveable feasts.</p>
 <h2>Features</h2>
 <ul>
 <li>
-<p>📅 <strong>Multiple Date Formats</strong></p>
+<p>📅 <strong>Seven Date Formats</strong></p>
 <ul>
 <li>Exact dates (recurring annually): <code>MM/DD</code></li>
-<li>Exact dates with year (one-time events): <code>MM/DD,YYYY</code></li>
-<li>Relative dates (e.g., &quot;3rd Monday in January&quot;): <code>NWeekdayMonth</code></li>
+<li>Exact dates with year (historical): <code>MM/DD,YYYY</code></li>
+<li>Relative dates (&quot;3rd Monday in January&quot;): <code>NWeekdayMonth</code>, and <code>LWeekdayMonth</code> for the last in the month</li>
+<li>One-off dated events (eclipses, comet returns): <code>YYYY-MM-DD</code></li>
+<li>Periodic cycles (orbital periods, the saros): <code>every:DAYS:YYYY-MM-DD</code></li>
+<li>Annual spans (sports seasons, zodiac signs): <code>range:MM/DD-MM/DD</code></li>
+<li>Moveable feasts, Western and Orthodox: <code>easter+N</code> / <code>orthodox-easter+N</code></li>
 </ul>
 </li>
 <li>
-<p>🔍 <strong>Powerful Query Functions</strong></p>
+<p>🔍 <strong>Query Functions</strong></p>
 <ul>
 <li>Find events in the next X days/weeks/months/years</li>
-<li>Find events on a specific date</li>
-<li>Filter by entry type</li>
+<li>Expand every occurrence across a date range</li>
+<li>Find events on a specific date, or filter by type or source file</li>
 </ul>
 </li>
 <li>
 <p>📊 <strong>CSV Support</strong></p>
 <ul>
 <li>Automatic format detection</li>
-<li>Recursive directory reading</li>
-<li>Handles multiple date formats in a single file</li>
+<li>RFC 4180 quoted fields, so names may contain commas</li>
+<li><code>#</code> comment lines for provenance</li>
+<li>Recursive directory reading, with the bundled data resolvable from anywhere</li>
+</ul>
+</li>
+<li>
+<p>✅ <strong>Verified Data</strong></p>
+<ul>
+<li>Place, institution and club birthdays are generated from Wikidata, day precision only</li>
+<li>A checked-in fact snapshot is asserted by the test suite on every run</li>
 </ul>
 </li>
 </ul>
@@ -149,27 +161,140 @@ const yearsSince = independence.getYearsSince(new Date());
 console.log(`${yearsSince} years ago`);
 </code></pre>
 <h2>CSV File Format</h2>
-<h3>Exact Dates (Recurring)</h3>
-<pre class="prettyprint source lang-csv"><code>New Year's Day,01/01
-Valentine's Day,02/14
-Pi Day,03/14
-</code></pre>
-<h3>Exact Dates with Year (One-time)</h3>
-<pre class="prettyprint source lang-csv"><code>Afghanistan,08/19,1919
-United States,07/04,1776
-France,07/14,1789
+<p>The parser picks the entry type from the shape of the second field.</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MM/DD</code></td>
+<td><code>ExactDateEntry</code></td>
+<td><code>Pi Day,03/14</code></td>
+</tr>
+<tr>
+<td><code>MM/DD,YYYY</code></td>
+<td><code>ExactDateWithYearEntry</code></td>
+<td><code>Afghanistan's Birthday,08/19,1919</code></td>
+</tr>
+<tr>
+<td><code>NWeekdayMonth</code></td>
+<td><code>RelativeDateEntry</code></td>
+<td><code>Labor Day,1MondaySep</code></td>
+</tr>
+<tr>
+<td><code>LWeekdayMonth</code></td>
+<td><code>RelativeDateEntry</code></td>
+<td><code>Memorial Day,LMondayMay</code></td>
+</tr>
+<tr>
+<td><code>YYYY-MM-DD</code></td>
+<td><code>OneTimeEntry</code></td>
+<td><code>Total Solar Eclipse,2026-08-12</code></td>
+</tr>
+<tr>
+<td><code>every:DAYS:YYYY-MM-DD</code></td>
+<td><code>IntervalEntry</code></td>
+<td><code>Mars Orbit,every:686.98:2000-01-01</code></td>
+</tr>
+<tr>
+<td><code>range:MM/DD-MM/DD</code></td>
+<td><code>DateRangeEntry</code></td>
+<td><code>NFL Regular Season,range:09/04-01/05</code></td>
+</tr>
+<tr>
+<td><code>easter[+-]N</code></td>
+<td><code>EasterEntry</code></td>
+<td><code>Good Friday,easter-2</code></td>
+</tr>
+<tr>
+<td><code>orthodox-easter[+-]N</code></td>
+<td><code>EasterEntry</code></td>
+<td><code>Orthodox Easter,orthodox-easter+0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Lines beginning with <code>#</code> are comments. Names containing a comma must be double-quoted, RFC 4180 style:</p>
+<pre class="prettyprint source lang-csv"><code># generated from Wikidata
+&quot;Nike, Inc's Birthday&quot;,01/25,1964
 </code></pre>
 <h3>Relative Dates</h3>
-<pre class="prettyprint source lang-csv"><code>Martin Luther King Jr. Day,3MondayJan
-Labor Day,1MondaySep
-Thanksgiving,4ThursdayNov
-</code></pre>
 <p>Format: <code>{N}{Weekday}{Month}</code> where:</p>
 <ul>
-<li><code>N</code> = occurrence number (1-5)</li>
+<li><code>N</code> = occurrence number (1-5), or <code>L</code> for the last one in the month</li>
 <li><code>Weekday</code> = Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday</li>
 <li><code>Month</code> = Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec</li>
 </ul>
+<p><code>L</code> matters: Memorial Day is the <em>last</em> Monday in May, which is the fourth Monday in most years and the fifth in others.</p>
+<h3>Spans</h3>
+<p>A <code>range:</code> whose end falls before its start wraps into the next year, which is how most sports seasons and two zodiac signs behave. <code>occursOn</code> returns true for every day inside the span, endpoints included.</p>
+<pre class="prettyprint source lang-csv"><code>NFL Regular Season,range:09/04-01/05
+Capricorn,range:12/22-01/19
+</code></pre>
+<h3>Cycles</h3>
+<p><code>every:DAYS:YYYY-MM-DD</code> repeats on a fixed period, anchored to an epoch. The period may be fractional; occurrences round to the nearest whole day, and day arithmetic is DST-safe.</p>
+<pre class="prettyprint source lang-csv"><code>Synodic Month (New Moon to New Moon),every:29.530589:2026-01-18
+Saros Cycle (Eclipse Repeat),every:6585.3211:2017-08-21
+</code></pre>
+<h2>Bundled Data</h2>
+<p><code>getAllEntries()</code> with no arguments reads the data shipped with the package, resolved from the module's own location.</p>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>events.csv</code></td>
+<td>Fixed-date observances</td>
+</tr>
+<tr>
+<td><code>events_d.csv</code></td>
+<td>Relative-date observances</td>
+</tr>
+<tr>
+<td><code>events_e.csv</code></td>
+<td>Moveable feasts, Western and Orthodox</td>
+</tr>
+<tr>
+<td><code>anniversaries/</code></td>
+<td>Dated milestones by domain</td>
+</tr>
+<tr>
+<td><code>birthdays/</code></td>
+<td>Countries, companies, international bodies, and places across 27 country folders</td>
+</tr>
+<tr>
+<td><code>cosmic/</code></td>
+<td>Equinoxes, eclipses, comets, orbits, cycles, meteor showers, zodiac</td>
+</tr>
+<tr>
+<td><code>sports/</code></td>
+<td>League calendars, motorsport, football, Olympics, clubs and governing bodies</td>
+</tr>
+</tbody>
+</table>
+<p>Every entry carries a <code>source</code> field holding its data-relative path, so <code>getEntriesBySource(entries, 'cosmic/')</code> retrieves a whole domain.</p>
+<h3>Cloudflare Workers</h3>
+<p><code>DATA_DIR</code> resolves against the module's own location, which needs a real filesystem. Workers has none, so <strong>pass the directory explicitly</strong> rather than relying on the default.</p>
+<p>Bundle the CSVs as text modules and read them from the bundle root:</p>
+<pre class="prettyprint source lang-jsonc"><code>// wrangler.jsonc
+{
+	&quot;find_additional_modules&quot;: true,
+	&quot;base_dir&quot;: &quot;./node_modules/@earth-app/moho/src&quot;,
+	&quot;rules&quot;: [{ &quot;type&quot;: &quot;Text&quot;, &quot;globs&quot;: [&quot;data/**/*.csv&quot;], &quot;fallthrough&quot;: true }]
+}
+</code></pre>
+<pre class="prettyprint source lang-typescript"><code>// the CSVs land at the bundle root, not next to the module
+const entries = getAllEntries('/bundle/data');
+</code></pre>
+<p>That adds all 76 files to the Worker, about 50 KB gzipped. <code>parseCSVLine</code>, <code>splitCSVFields</code> and every entry class are pure and need no filesystem at all, so a Worker that loads its own CSV text can use them directly.</p>
 <h2>API Reference</h2>
 <h3>Classes</h3>
 <h4><code>Entry</code> (Abstract)</h4>
@@ -197,12 +322,51 @@ Thanksgiving,4ThursdayNov
 <p>For events that occur on a relative date (e.g., &quot;3rd Monday in January&quot;).</p>
 <pre class="prettyprint source lang-typescript"><code>new RelativeDateEntry(name: string, occurrence: number, dayOfWeek: number, month: number)
 </code></pre>
+<p>Pass <code>RelativeDateEntry.LAST</code> as the occurrence for the last weekday of the month.</p>
+<h4><code>OneTimeEntry</code></h4>
+<p>For something that happens exactly once, on a known calendar day.</p>
+<pre class="prettyprint source lang-typescript"><code>new OneTimeEntry(name: string, month: number, day: number, year: number)
+</code></pre>
+<p>Additional members:</p>
+<ul>
+<li><code>date: Date</code> - the event day, at local midnight</li>
+<li><code>hasOccurred(fromDate?: Date): boolean</code></li>
+</ul>
+<h4><code>IntervalEntry</code></h4>
+<p>For a cycle that repeats on a fixed period in days, anchored to an epoch.</p>
+<pre class="prettyprint source lang-typescript"><code>new IntervalEntry(name: string, epoch: Date, intervalDays: number)
+</code></pre>
+<p>Additional methods:</p>
+<ul>
+<li><code>getOccurrence(n: number): Date</code> - the nth cycle; 0 is the epoch, negatives run backwards</li>
+<li><code>getCycleAt(date: Date): number</code></li>
+</ul>
+<h4><code>DateRangeEntry</code></h4>
+<p>For an annually recurring span. <code>occursOn</code> is true anywhere inside it.</p>
+<pre class="prettyprint source lang-typescript"><code>new DateRangeEntry(name: string, startMonth: number, startDay: number, endMonth: number, endDay: number)
+</code></pre>
+<p>Additional members:</p>
+<ul>
+<li><code>wrapsYear: boolean</code></li>
+<li><code>getRangeFor(year: number): { start: Date; end: Date }</code></li>
+</ul>
+<h4><code>EasterEntry</code></h4>
+<p>For a feast positioned a fixed number of days from Easter Sunday.</p>
+<pre class="prettyprint source lang-typescript"><code>new EasterEntry(name: string, offsetDays: number, calendar?: 'gregorian' | 'julian')
+</code></pre>
+<p>Additional members:</p>
+<ul>
+<li><code>static computeEaster(year: number, calendar?): Date</code></li>
+<li><code>getDateFor(year: number): Date</code></li>
+</ul>
 <h3>Functions</h3>
 <h4>File Reading</h4>
 <ul>
-<li><code>getEntries(filePath: string): Entry[]</code> - Read entries from a CSV file</li>
-<li><code>getAllEntries(dataDir?: string): Entry[]</code> - Read all CSV files recursively</li>
-<li><code>parseCSVLine(line: string): Entry | null</code> - Parse a single CSV line</li>
+<li><code>getEntries(filePath: string, dataDir?: string): Entry[]</code> - Read entries from a CSV file</li>
+<li><code>getAllEntries(dataDir?: string): Entry[]</code> - Read all CSV files recursively; defaults to the bundled data</li>
+<li><code>parseCSVLine(line: string, source?: string): Entry | null</code> - Parse a single CSV line</li>
+<li><code>splitCSVFields(line: string): string[]</code> - Split a line into RFC 4180 fields</li>
+<li><code>DATA_DIR: string</code> - Absolute path to the bundled data</li>
 </ul>
 <h4>Querying</h4>
 <ul>
@@ -210,10 +374,25 @@ Thanksgiving,4ThursdayNov
 <li><code>getEntriesInNextWeeks(entries: Entry[], weeks: number, fromDate?: Date)</code></li>
 <li><code>getEntriesInNextMonths(entries: Entry[], months: number, fromDate?: Date)</code></li>
 <li><code>getEntriesInNextYears(entries: Entry[], years: number, fromDate?: Date)</code></li>
+<li><code>getEntriesInRange(entries: Entry[], startDate: Date, endDate: Date)</code> - every occurrence, not just the next one</li>
 <li><code>getEntriesOnDate(entries: Entry[], date: Date): Entry[]</code></li>
 <li><code>getEntriesOnMonthDay(entries: Entry[], month: number, day: number): Entry[]</code></li>
 <li><code>getEntriesByType&lt;T&gt;(entries: Entry[], type: Constructor&lt;T&gt;): T[]</code></li>
+<li><code>getEntriesBySource(entries: Entry[], source: string): Entry[]</code></li>
 </ul>
+<h2>Data Provenance and Verification</h2>
+<p>Place, institution and club birthdays are generated from the Wikidata Query Service, using <code>P571</code> (inception) and <code>P1619</code> (date of official opening). Only <strong>day-precision</strong> dates are kept: Wikidata stores &quot;founded in 1521&quot; as <code>1521-01-01</code>, and emitting that as a January 1st birthday would invent a fact that does not exist. Dates before 1582 are recorded as stated in the Julian calendar, matching the sources that quote them.</p>
+<p><code>scripts/verify-data.ts</code> resolves every dated row back to a Wikidata item and writes <code>test/fixtures/verified-facts.json</code>. <code>test/data-verification.test.ts</code> asserts the CSVs against that snapshot offline, so the gate suite stays hermetic while still being checked against a real external source.</p>
+<p>The snapshot has two halves:</p>
+<ul>
+<li><strong><code>agreed</code></strong> - the CSV and Wikidata state the same date. The gate asserts these strictly, so editing either side fails the build.</li>
+<li><strong><code>divergent</code></strong> - they disagree, and both values are recorded. Most divergences are definitional rather than wrong: <code>countries.csv</code> dates Afghanistan to its 1919 independence where Wikidata reaches back to the 1747 founding of the Durrani Empire, and <code>companies.csv</code> dates ExxonMobil to the 1999 merger where Wikidata reaches back to Standard Oil in 1882. The gate pins the CSV side of each divergence so it cannot drift unreviewed.</li>
+</ul>
+<p>Rows that cannot be resolved unambiguously are counted but not asserted. A name that matches several Wikidata items with conflicting dates is dropped rather than guessed at, which is why <code>us/cities.csv</code> verifies fewer rows than it holds.</p>
+<pre class="prettyprint source lang-bash"><code>bun run data:all         # regenerate every generated data file
+bun run verify:refresh   # rebuild the snapshot and print a divergence report
+bun run test:live        # check the snapshot still agrees with live Wikidata
+</code></pre>
 <h2>Development</h2>
 <pre class="prettyprint source lang-bash"><code># Install dependencies
 bun install
@@ -245,13 +424,13 @@ bun run build
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DATA_DIR">DATA_DIR</a></li><li><a href="global.html#DateRangeEntry">DateRangeEntry</a></li><li><a href="global.html#EasterEntry">EasterEntry</a></li><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#IntervalEntry">IntervalEntry</a></li><li><a href="global.html#OneTimeEntry">OneTimeEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#fromDayNumber">fromDayNumber</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesBySource">getEntriesBySource</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesInRange">getEntriesInRange</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#isValidMonthDay">isValidMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#splitCSVFields">splitCSVFields</a></li><li><a href="global.html#toDayNumber">toDayNumber</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 03:02:05 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 06:32:46 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
