@@ -26,6 +26,8 @@ jobs:
           bun-version: latest
       - name: Install Dependencies
         run: bun ci
+      - name: Typecheck
+        run: bun run typecheck
       - name: Build Package
         run: bun run build
       - name: Run Tests
