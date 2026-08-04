@@ -1,0 +1,12 @@
+# next predicted perihelion passage for well-known periodic comets
+# source: JPL Small-Body Database via each comet's Wikipedia article
+# the orbital period is noted in the name; comet periods vary between returns,
+# so these are the published predictions rather than a period applied to an epoch
+1P/Halley Perihelion (75.32 Year Period),2061-07-28
+2P/Encke Perihelion (3.3 Year Period),2027-02-10
+12P/Pons-Brooks Perihelion (71.3 Year Period),2095-08-15
+21P/Giacobini-Zinner Perihelion (6.55 Year Period),2031-08-30
+46P/Wirtanen Perihelion (5.44 Year Period),2029-10-27
+55P/Tempel-Tuttle Perihelion (33.24 Year Period),2031-05-20
+67P/Churyumov-Gerasimenko Perihelion (6.44 Year Period),2028-04-09
+109P/Swift-Tuttle Perihelion (133.28 Year Period),2126-07-12

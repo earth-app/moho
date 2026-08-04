@@ -1,0 +1,9 @@
+# IndyCar calendar
+# the Indianapolis 500 itself is dated per year in sports/scheduled.csv, because it falls on the
+# Sunday before Memorial Day, which is neither a fixed date nor an Nth weekday
+IndyCar Series Season,range:03/01-09/15
+Indianapolis 500 Qualifying Weekend,range:05/16-05/24
+Indianapolis 500 Carb Day,range:05/21-05/29
+Grand Prix of Long Beach,range:04/10-04/20
+Detroit Grand Prix,range:05/30-06/07
+Indianapolis 500's First Race,05/30,1911

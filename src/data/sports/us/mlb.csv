@@ -1,0 +1,12 @@
+# Major League Baseball calendar
+# `range:` rows are the typical window a phase of the season falls in, not an exact schedule
+MLB Spring Training,range:02/20-03/24
+MLB Opening Day,range:03/25-04/03
+MLB Regular Season,range:03/26-09/28
+MLB All-Star Game,range:07/13-07/16
+MLB Trade Deadline,range:07/30-08/01
+MLB Postseason,range:09/30-11/05
+World Series,range:10/20-11/05
+MLB Winter Meetings,range:12/06-12/12
+National Baseball Hall of Fame Induction,range:07/20-07/28
+National Baseball Hall of Fame Dedication,06/12,1939

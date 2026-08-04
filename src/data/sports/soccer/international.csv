@@ -1,0 +1,15 @@
+# international football tournaments
+# scheduled editions are dated; recurring windows use `range:`
+FIFA World Cup 2026 Opening Match,2026-06-11
+FIFA World Cup 2026 Final,2026-07-19
+FIFA Women's World Cup 2027 Opening Match,2027-06-24
+UEFA Euro 2028 Final,2028-07-09
+FIFA World Cup 2030 Opening Match,2030-06-13
+Africa Cup of Nations,range:12/21-01/18
+Copa America,range:06/14-07/14
+CONCACAF Gold Cup,range:06/14-07/07
+UEFA Nations League Finals,range:06/04-06/09
+FIFA Club World Cup,range:06/14-07/13
+International Olympic Committee's Birthday,06/23,1894
+UEFA's Birthday,06/15,1954
+FIFA's Birthday,05/21,1904

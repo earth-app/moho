@@ -1,0 +1,22 @@
+# marquee events outside the major league calendars
+# horse racing triple crown legs are fixed conventions; the rest use typical windows
+Kentucky Derby,1SaturdayMay
+Preakness Stakes,3SaturdayMay
+Belmont Stakes,range:06/05-06/12
+Breeders' Cup,range:10/30-11/07
+Australian Open,range:01/12-02/01
+French Open,range:05/24-06/08
+Wimbledon,range:06/29-07/13
+US Open Tennis,range:08/24-09/08
+The Masters Tournament,range:04/06-04/13
+PGA Championship,range:05/14-05/18
+US Open Golf,range:06/11-06/22
+The Open Championship,range:07/14-07/21
+Ryder Cup,range:09/24-09/29
+Tour de France,range:06/27-07/27
+Giro d'Italia,range:05/08-06/01
+Boston Marathon,3MondayApr
+New York City Marathon,1SundayNov
+London Marathon,range:04/20-04/28
+Iditarod Trail Sled Dog Race,1SaturdayMar
+Little League World Series,range:08/13-08/25

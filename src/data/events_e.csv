@@ -1,0 +1,33 @@
+# moveable feasts, positioned relative to Easter Sunday
+# `easter+N` uses the Gregorian (Western) computus, `orthodox-easter+N` the Julian one
+Septuagesima,easter-63
+Shrove Monday,easter-48
+Mardi Gras,easter-47
+Ash Wednesday,easter-46
+Laetare Sunday,easter-21
+Passion Sunday,easter-14
+Palm Sunday,easter-7
+Holy Monday,easter-6
+Holy Tuesday,easter-5
+Spy Wednesday,easter-4
+Maundy Thursday,easter-3
+Good Friday,easter-2
+Holy Saturday,easter-1
+Easter Sunday,easter+0
+Easter Monday,easter+1
+Divine Mercy Sunday,easter+7
+Rogation Sunday,easter+35
+Ascension Day,easter+39
+Pentecost,easter+49
+Whit Monday,easter+50
+Trinity Sunday,easter+56
+Corpus Christi,easter+60
+Sacred Heart,easter+68
+Orthodox Clean Monday,orthodox-easter-48
+Orthodox Lazarus Saturday,orthodox-easter-8
+Orthodox Palm Sunday,orthodox-easter-7
+Orthodox Holy Friday,orthodox-easter-2
+Orthodox Easter,orthodox-easter+0
+Orthodox Bright Monday,orthodox-easter+1
+Orthodox Ascension,orthodox-easter+39
+Orthodox Pentecost,orthodox-easter+49

@@ -1,0 +1,15 @@
+# Formula One calendar
+# `range:` rows are the typical window a race weekend falls in; F1 revises its calendar every year
+Formula One Season,range:03/06-12/07
+Australian Grand Prix,range:03/06-03/16
+Monaco Grand Prix,range:05/22-05/26
+Canadian Grand Prix,range:06/12-06/16
+British Grand Prix,range:07/03-07/07
+Belgian Grand Prix,range:07/25-07/28
+Italian Grand Prix,range:08/30-09/07
+Singapore Grand Prix,range:09/19-09/22
+United States Grand Prix,range:10/17-10/20
+Brazilian Grand Prix,range:11/07-11/10
+Las Vegas Grand Prix,range:11/20-11/23
+Abu Dhabi Grand Prix,range:12/04-12/08
+Formula One World Championship's First Race,05/13,1950

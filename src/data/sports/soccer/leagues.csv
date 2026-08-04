@@ -1,0 +1,20 @@
+# domestic football league seasons and cup finals
+# `range:` rows are the typical window each competition runs in, not an exact schedule
+Premier League Season,range:08/15-05/24
+EFL Championship Season,range:08/08-05/03
+La Liga Season,range:08/15-05/24
+Serie A Season,range:08/17-05/24
+Bundesliga Season,range:08/22-05/16
+Ligue 1 Season,range:08/15-05/16
+Eredivisie Season,range:08/08-05/17
+Primeira Liga Season,range:08/08-05/17
+Scottish Premiership Season,range:08/01-05/17
+Major League Soccer Season,range:02/21-10/18
+Liga MX Apertura,range:07/03-12/15
+Liga MX Clausura,range:01/09-05/31
+Brasileirao Serie A Season,range:03/29-12/06
+Argentine Primera Division Season,range:01/23-12/13
+FA Cup Final,range:05/16-05/24
+UEFA Champions League Final,range:05/28-06/03
+UEFA Europa League Final,range:05/20-05/27
+Copa Libertadores Final,range:11/22-11/30

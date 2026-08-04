@@ -1,0 +1,15 @@
+# sidereal orbital periods, source: NASA NSSDC planetary fact sheets
+# anchored to the J2000.0 epoch; the interval is the physical constant, the phase is a convention
+Mercury Completes an Orbit,every:87.969:2000-01-01
+Venus Completes an Orbit,every:224.701:2000-01-01
+Earth Completes an Orbit,every:365.256:2000-01-01
+Mars Completes an Orbit,every:686.98:2000-01-01
+Jupiter Completes an Orbit,every:4332.589:2000-01-01
+Saturn Completes an Orbit,every:10759.22:2000-01-01
+Uranus Completes an Orbit,every:30685.4:2000-01-01
+Neptune Completes an Orbit,every:60189:2000-01-01
+Pluto Completes an Orbit,every:90560:2000-01-01
+Ceres Completes an Orbit,every:1681.63:2000-01-01
+Eris Completes an Orbit,every:203830:2000-01-01
+Haumea Completes an Orbit,every:103468:2000-01-01
+Makemake Completes an Orbit,every:112897:2000-01-01

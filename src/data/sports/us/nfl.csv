@@ -1,0 +1,17 @@
+# NFL calendar
+# `range:` rows are the typical window a phase of the season falls in, not an exact schedule;
+# the league sets exact dates each year. Fixed and relative rows are the league's standing conventions.
+NFL Regular Season,range:09/04-01/05
+NFL Kickoff Game,range:09/03-09/11
+NFL Thanksgiving Classic,4ThursdayNov
+NFL Playoffs,range:01/10-02/08
+Super Bowl,2SundayFeb
+Pro Bowl Games,1SundayFeb
+NFL Scouting Combine,range:02/24-03/03
+NFL Free Agency Opens,range:03/11-03/14
+NFL Draft,range:04/23-04/26
+NFL Training Camps Open,range:07/22-07/30
+Pro Football Hall of Fame Game,range:07/31-08/07
+Pro Football Hall of Fame Enshrinement,range:08/01-08/09
+NFL's Birthday,09/17,1920
+Pro Football Hall of Fame's Birthday,09/07,1963

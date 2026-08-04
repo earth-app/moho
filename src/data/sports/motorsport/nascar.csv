@@ -1,0 +1,13 @@
+# NASCAR calendar
+# the Daytona 500 normally falls on the Sunday of Presidents' Day weekend, which is the third
+# Sunday in February; it moves when that collides with the Super Bowl, as in 2027
+NASCAR Cup Series Season,range:02/01-11/10
+Daytona 500,3SundayFeb
+NASCAR All-Star Race,range:05/16-05/20
+Coca-Cola 600,range:05/24-05/31
+Brickyard 400,range:07/20-07/28
+Southern 500,1SundaySep
+NASCAR Playoffs,range:09/06-11/10
+NASCAR Cup Series Championship Race,range:11/02-11/10
+NASCAR Hall of Fame Induction,range:01/19-01/24
+NASCAR's Birthday,02/21,1948

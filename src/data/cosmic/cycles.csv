@@ -1,0 +1,11 @@
+# fixed astronomical cycles, each anchored to a dated occurrence of that cycle
+Synodic Month (New Moon to New Moon),every:29.530589:2026-01-18
+Sidereal Month,every:27.321662:2026-01-18
+Anomalistic Month (Perigee to Perigee),every:27.554549:2026-01-08
+Draconic Month,every:27.212221:2026-01-12
+Saros Cycle (Eclipse Repeat),every:6585.3211:2017-08-21
+Metonic Cycle (19-Year Lunar Return),every:6939.6884:2014-01-01
+Solar Cycle (Sunspot Maximum),every:4015:2024-10-01
+Venus Synodic Period (Earth Alignment),every:583.92:2026-01-06
+Mars Synodic Period (Earth Opposition),every:779.94:2027-02-19
+Jupiter Synodic Period (Earth Opposition),every:398.88:2026-01-10

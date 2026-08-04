@@ -1,0 +1,12 @@
+# NHL calendar
+# `range:` rows are the typical window a phase of the season falls in, not an exact schedule
+NHL Regular Season,range:10/07-04/16
+NHL Winter Classic,01/01
+NHL All-Star Weekend,range:02/01-02/05
+NHL Trade Deadline,range:03/03-03/08
+Stanley Cup Playoffs,range:04/20-06/25
+Stanley Cup Final,range:06/03-06/25
+NHL Entry Draft,range:06/26-06/29
+NHL Free Agency Opens,07/01
+Hockey Hall of Fame Induction,range:11/09-11/16
+National Hockey League's Birthday,11/26,1917
