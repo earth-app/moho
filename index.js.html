@@ -26,29 +26,9 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.RelativeDateEntry = exports.OneTimeEntry = exports.IntervalEntry = exports.ExactDateWithYearEntry = exports.ExactDateEntry = exports.Entry = exports.EasterEntry = exports.DateRangeEntry = exports.DATA_DIR = void 0;
-exports.getAllEntries = getAllEntries;
-exports.getEntries = getEntries;
-exports.getEntriesBySource = getEntriesBySource;
-exports.getEntriesByType = getEntriesByType;
-exports.getEntriesInNextDays = getEntriesInNextDays;
-exports.getEntriesInNextMonths = getEntriesInNextMonths;
-exports.getEntriesInNextWeeks = getEntriesInNextWeeks;
-exports.getEntriesInNextYears = getEntriesInNextYears;
-exports.getEntriesInRange = getEntriesInRange;
-exports.getEntriesOnDate = getEntriesOnDate;
-exports.getEntriesOnMonthDay = getEntriesOnMonthDay;
-exports.parseCSVLine = parseCSVLine;
-exports.splitCSVFields = splitCSVFields;
-var _fs = _interopRequireDefault(require("fs"));
-var _path = _interopRequireDefault(require("path"));
-var _url = require("url");
-function _interopRequireDefault(e) { return e &amp;&amp; e.__esModule ? e : { default: e }; }
+            <pre class="prettyprint source linenums"><code>import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 const MS_PER_DAY = 86_400_000;
 
 /**
@@ -79,7 +59,7 @@ function fromDayNumber(dayNumber) {
  * @param line - The raw CSV line
  * @returns The individual field values, unquoted and unescaped
  */
-function splitCSVFields(line) {
+export function splitCSVFields(line) {
   const fields = [];
   let current = '';
   let quoted = false;
@@ -124,14 +104,14 @@ function splitCSVFields(line) {
  * text modules, so the data lives at the bundle root (`/bundle/data`) rather
  * than anywhere near the module.
  */
-const DATA_DIR = exports.DATA_DIR = (() => {
+export const DATA_DIR = (() => {
   // the historical default, kept as the fallback so a filesystem-less runtime
   // behaves exactly as it did before rather than pointing somewhere invented
   const fallback = './src/data';
   try {
-    const here = _path.default.dirname((0, _url.fileURLToPath)(import.meta.url));
-    for (const candidate of [_path.default.join(here, 'data'), _path.default.join(here, '..', 'src', 'data')]) {
-      if (_fs.default.existsSync(candidate)) return candidate;
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    for (const candidate of [path.join(here, 'data'), path.join(here, '..', 'src', 'data')]) {
+      if (fs.existsSync(candidate)) return candidate;
     }
   } catch {
     // no file: URL, or no fs; fall through
@@ -143,7 +123,7 @@ const DATA_DIR = exports.DATA_DIR = (() => {
  * Represents a calendar entry with a name and date.
  * Base class for all entry types.
  */
-class Entry {
+export class Entry {
   constructor(name, source) {
     this.name = name;
     this.source = source;
@@ -173,8 +153,7 @@ class Entry {
  * Entry with a specific month and day (recurring annually).
  * Example: "New Year's Day,01/01"
  */
-exports.Entry = Entry;
-class ExactDateEntry extends Entry {
+export class ExactDateEntry extends Entry {
   constructor(name, month, day, source) {
     super(name, source);
     this.month = month;
@@ -210,8 +189,7 @@ class ExactDateEntry extends Entry {
  * Entry with a specific year, month, and day (one-time event).
  * Example: "Afghanistan,08/19,1919"
  */
-exports.ExactDateEntry = ExactDateEntry;
-class ExactDateWithYearEntry extends Entry {
+export class ExactDateWithYearEntry extends Entry {
   constructor(name, month, day, year, source) {
     super(name, source);
     this.month = month;
@@ -262,8 +240,7 @@ class ExactDateWithYearEntry extends Entry {
  * Entry for a relative date (e.g., "3rd Monday in January").
  * Example: "Martin Luther King Jr. Day,3MondayJan"
  */
-exports.ExactDateWithYearEntry = ExactDateWithYearEntry;
-class RelativeDateEntry extends Entry {
+export class RelativeDateEntry extends Entry {
   static DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   static MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -384,8 +361,7 @@ class RelativeDateEntry extends Entry {
  *
  * Dates are calendar days, not instants. Astronomical rows store the UTC day.
  */
-exports.RelativeDateEntry = RelativeDateEntry;
-class OneTimeEntry extends Entry {
+export class OneTimeEntry extends Entry {
   constructor(name, month, day, year, source) {
     super(name, source);
     this.month = month;
@@ -437,8 +413,7 @@ class OneTimeEntry extends Entry {
  * The period may be fractional (Mars orbits in 686.98 days); occurrences are
  * rounded to the nearest whole day.
  */
-exports.OneTimeEntry = OneTimeEntry;
-class IntervalEntry extends Entry {
+export class IntervalEntry extends Entry {
   constructor(name, epoch, intervalDays, source) {
     super(name, source);
     this.epoch = epoch;
@@ -492,8 +467,7 @@ class IntervalEntry extends Entry {
  *
  * Example: `NFL Regular Season,range:09/04-01/04`
  */
-exports.IntervalEntry = IntervalEntry;
-class DateRangeEntry extends Entry {
+export class DateRangeEntry extends Entry {
   constructor(name, startMonth, startDay, endMonth, endDay, source) {
     super(name, source);
     this.startMonth = startMonth;
@@ -571,8 +545,7 @@ class DateRangeEntry extends Entry {
  *
  * Example: `Good Friday,easter-2` / `Orthodox Easter,orthodox-easter+0`
  */
-exports.DateRangeEntry = DateRangeEntry;
-class EasterEntry extends Entry {
+export class EasterEntry extends Entry {
   constructor(name, offsetDays, calendar = 'gregorian', source) {
     super(name, source);
     this.offsetDays = offsetDays;
@@ -658,10 +631,9 @@ class EasterEntry extends Entry {
  * @param filePath - The path to the CSV file
  * @returns Array of Entry objects
  */
-exports.EasterEntry = EasterEntry;
-function getEntries(filePath, dataDir = DATA_DIR) {
-  const relative = _path.default.relative(_path.default.resolve(dataDir), _path.default.resolve(filePath)).split(_path.default.sep).join('/');
-  const data = _fs.default.readFileSync(filePath, 'utf-8');
+export function getEntries(filePath, dataDir = DATA_DIR) {
+  const relative = path.relative(path.resolve(dataDir), path.resolve(filePath)).split(path.sep).join('/');
+  const data = fs.readFileSync(filePath, 'utf-8');
   const lines = data.split('\n').map(line => line.replace(/^\uFEFF/, '').replace(/\r$/, '')).filter(line => line.trim() !== '' &amp;&amp; !line.startsWith('#'));
   const entries = [];
   for (const line of lines) {
@@ -709,7 +681,7 @@ function isValidMonthDay(month, day) {
  * @param source - Optional provenance recorded on the entry
  * @returns An Entry object or null if invalid
  */
-function parseCSVLine(line, source) {
+export function parseCSVLine(line, source) {
   const parts = splitCSVFields(line);
   if (parts.length &lt; 2) return null;
   const name = parts[0]?.trim();
@@ -798,14 +770,14 @@ function parseCSVLine(line, source) {
  * @param dataDir - The root data directory (default: './src/data')
  * @returns Array of all Entry objects
  */
-function getAllEntries(dataDir = DATA_DIR) {
+export function getAllEntries(dataDir = DATA_DIR) {
   const allEntries = [];
   function readDirRecursively(dirPath) {
-    const items = _fs.default.readdirSync(dirPath, {
+    const items = fs.readdirSync(dirPath, {
       withFileTypes: true
     });
     for (const item of items) {
-      const fullPath = _path.default.join(dirPath, item.name);
+      const fullPath = path.join(dirPath, item.name);
       if (item.isDirectory()) {
         readDirRecursively(fullPath);
       } else if (item.isFile() &amp;&amp; item.name.endsWith('.csv')) {
@@ -825,7 +797,7 @@ function getAllEntries(dataDir = DATA_DIR) {
  * @param fromDate - Starting date (default: today)
  * @returns Array of entries with their next occurrence dates
  */
-function getEntriesInNextDays(entries, days, fromDate = new Date()) {
+export function getEntriesInNextDays(entries, days, fromDate = new Date()) {
   const endDate = new Date(fromDate);
   endDate.setDate(endDate.getDate() + days);
   return entries.map(entry => ({
@@ -843,7 +815,7 @@ function getEntriesInNextDays(entries, days, fromDate = new Date()) {
  * @param fromDate - Starting date (default: today)
  * @returns Array of entries with their next occurrence dates
  */
-function getEntriesInNextWeeks(entries, weeks, fromDate = new Date()) {
+export function getEntriesInNextWeeks(entries, weeks, fromDate = new Date()) {
   return getEntriesInNextDays(entries, weeks * 7, fromDate);
 }
 
@@ -854,7 +826,7 @@ function getEntriesInNextWeeks(entries, weeks, fromDate = new Date()) {
  * @param fromDate - Starting date (default: today)
  * @returns Array of entries with their next occurrence dates
  */
-function getEntriesInNextMonths(entries, months, fromDate = new Date()) {
+export function getEntriesInNextMonths(entries, months, fromDate = new Date()) {
   const endDate = new Date(fromDate);
   endDate.setMonth(endDate.getMonth() + months);
   return entries.map(entry => ({
@@ -872,7 +844,7 @@ function getEntriesInNextMonths(entries, months, fromDate = new Date()) {
  * @param fromDate - Starting date (default: today)
  * @returns Array of entries with their next occurrence dates
  */
-function getEntriesInNextYears(entries, years, fromDate = new Date()) {
+export function getEntriesInNextYears(entries, years, fromDate = new Date()) {
   const endDate = new Date(fromDate);
   endDate.setFullYear(endDate.getFullYear() + years);
   return entries.map(entry => ({
@@ -889,7 +861,7 @@ function getEntriesInNextYears(entries, years, fromDate = new Date()) {
  * @param date - The date to check
  * @returns Array of entries that occur on this date
  */
-function getEntriesOnDate(entries, date) {
+export function getEntriesOnDate(entries, date) {
   return entries.filter(entry => entry.occursOn(date));
 }
 
@@ -907,7 +879,7 @@ function getEntriesOnDate(entries, date) {
  * @param day - Day of month
  * @returns Array of entries anchored to this month/day
  */
-function getEntriesOnMonthDay(entries, month, day) {
+export function getEntriesOnMonthDay(entries, month, day) {
   return entries.filter(entry => {
     if (entry instanceof ExactDateEntry || entry instanceof ExactDateWithYearEntry || entry instanceof OneTimeEntry) {
       return entry.month === month &amp;&amp; entry.day === day;
@@ -927,7 +899,7 @@ function getEntriesOnMonthDay(entries, month, day) {
  * @param endDate - End of the window (inclusive)
  * @returns Entry/date pairs sorted by date
  */
-function getEntriesInRange(entries, startDate, endDate) {
+export function getEntriesInRange(entries, startDate, endDate) {
   return entries.flatMap(entry => entry.getOccurrencesInRange(startDate, endDate).map(date => ({
     entry,
     date
@@ -944,7 +916,7 @@ function getEntriesInRange(entries, startDate, endDate) {
  * @param source - A source path or path prefix
  * @returns Array of entries whose source starts with the given prefix
  */
-function getEntriesBySource(entries, source) {
+export function getEntriesBySource(entries, source) {
   return entries.filter(entry => entry.source?.startsWith(source) ?? false);
 }
 
@@ -954,7 +926,7 @@ function getEntriesBySource(entries, source) {
  * @param type - The entry type to filter by
  * @returns Array of entries of the specified type
  */
-function getEntriesByType(entries, type) {
+export function getEntriesByType(entries, type) {
   return entries.filter(entry => entry instanceof type);
 }</code></pre>
         </article>
@@ -966,13 +938,13 @@ function getEntriesByType(entries, type) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="global.html#Entry">Entry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DATA_DIR">DATA_DIR</a></li><li><a href="global.html#DateRangeEntry">DateRangeEntry</a></li><li><a href="global.html#EasterEntry">EasterEntry</a></li><li><a href="global.html#ExactDateEntry">ExactDateEntry</a></li><li><a href="global.html#ExactDateWithYearEntry">ExactDateWithYearEntry</a></li><li><a href="global.html#IntervalEntry">IntervalEntry</a></li><li><a href="global.html#OneTimeEntry">OneTimeEntry</a></li><li><a href="global.html#RelativeDateEntry">RelativeDateEntry</a></li><li><a href="global.html#fromDayNumber">fromDayNumber</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntriesBySource">getEntriesBySource</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesInRange">getEntriesInRange</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#isValidMonthDay">isValidMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#splitCSVFields">splitCSVFields</a></li><li><a href="global.html#toDayNumber">toDayNumber</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DateRangeEntry.html">DateRangeEntry</a></li><li><a href="EasterEntry.html">EasterEntry</a></li><li><a href="Entry.html">Entry</a></li><li><a href="ExactDateEntry.html">ExactDateEntry</a></li><li><a href="ExactDateWithYearEntry.html">ExactDateWithYearEntry</a></li><li><a href="IntervalEntry.html">IntervalEntry</a></li><li><a href="OneTimeEntry.html">OneTimeEntry</a></li><li><a href="RelativeDateEntry.html">RelativeDateEntry</a></li></ul><h3>Global</h3><ul><li><a href="global.html#DATA_DIR">DATA_DIR</a></li><li><a href="global.html#fromDayNumber">fromDayNumber</a></li><li><a href="global.html#getAllEntries">getAllEntries</a></li><li><a href="global.html#getEntries">getEntries</a></li><li><a href="global.html#getEntriesBySource">getEntriesBySource</a></li><li><a href="global.html#getEntriesByType">getEntriesByType</a></li><li><a href="global.html#getEntriesInNextDays">getEntriesInNextDays</a></li><li><a href="global.html#getEntriesInNextMonths">getEntriesInNextMonths</a></li><li><a href="global.html#getEntriesInNextWeeks">getEntriesInNextWeeks</a></li><li><a href="global.html#getEntriesInNextYears">getEntriesInNextYears</a></li><li><a href="global.html#getEntriesInRange">getEntriesInRange</a></li><li><a href="global.html#getEntriesOnDate">getEntriesOnDate</a></li><li><a href="global.html#getEntriesOnMonthDay">getEntriesOnMonthDay</a></li><li><a href="global.html#isValidMonthDay">isValidMonthDay</a></li><li><a href="global.html#parseCSVLine">parseCSVLine</a></li><li><a href="global.html#splitCSVFields">splitCSVFields</a></li><li><a href="global.html#toDayNumber">toDayNumber</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 06:34:17 GMT+0000 (Coordinated Universal Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Aug 04 2026 06:45:49 GMT+0000 (Coordinated Universal Time)
 </footer>
 
 <script> prettyPrint(); </script>
