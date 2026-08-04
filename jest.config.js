@@ -14,5 +14,7 @@ export default {
 		]
 	},
 	testMatch: ['**/__tests__/**/*.test.ts', '**/?(*.)+(spec|test).ts'],
+	// the live lane hits the network; it runs via `bun run test:live`, never on the gate
+	testPathIgnorePatterns: ['/node_modules/', '/test/live/'],
 	collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts']
 };
